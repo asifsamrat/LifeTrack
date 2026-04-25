@@ -1,4 +1,4 @@
-package com.example.lifetrack.screens
+package com.example.lifetrack.userSignInSignUp
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

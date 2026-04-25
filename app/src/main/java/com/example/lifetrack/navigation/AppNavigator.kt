@@ -11,8 +11,8 @@ import com.example.lifetrack.Adding.AddNoteScreen
 import com.example.lifetrack.Adding.AddReminderScreen
 import com.example.lifetrack.screens.ForgotPasswordScreen
 import com.example.lifetrack.screens.HomeScreen
-import com.example.lifetrack.screens.LoginScreen
-import com.example.lifetrack.screens.RegisterScreen
+import com.example.lifetrack.userSignInSignUp.LoginScreen
+import com.example.lifetrack.userSignInSignUp.RegisterScreen
 
 @Composable
 fun AppNavigator() {
