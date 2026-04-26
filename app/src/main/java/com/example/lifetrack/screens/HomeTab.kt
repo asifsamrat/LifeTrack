@@ -117,13 +117,11 @@ fun HomeTab() {
 
         Column(
             modifier = Modifier.padding(8.dp)
-                //.background(DarkGreen)
         ) {
             // Profile Section
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp)
                     .offset(y = (-40).dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -133,7 +131,6 @@ fun HomeTab() {
                     modifier = Modifier
                         .size(120.dp)
                         .clip(CircleShape)
-                        .border(2.dp, DarkGreen, CircleShape)
                         .shadow(10.dp)
                         .background(MaterialTheme.colorScheme.primaryContainer)
                         .clickable { imageLauncher.launch("image/*") },
@@ -173,12 +170,14 @@ fun HomeTab() {
 
                         Text(
                             text = "Age: $age",
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
 
                         Text(
                             text = "Occupation: $occupation",
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
                 }
@@ -206,10 +205,19 @@ fun HomeTab() {
                 }
             }
 
+            //Vertical Divider
+            HorizontalDivider(
+                color = Color.LightGray,
+                thickness = 1.dp,
+                modifier = Modifier.fillMaxWidth()
+                    .shadow(2.5.dp, RoundedCornerShape(10.dp))
+            )
+
             // Upcomming reminder and memeories
             Column(
                 modifier = Modifier.fillMaxWidth()
                     .fillMaxHeight()
+                    .padding(top = 10.dp)
                     .verticalScroll(rememberScrollState())
                     .padding(8.dp)
             ) {

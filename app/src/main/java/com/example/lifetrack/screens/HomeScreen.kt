@@ -2,6 +2,7 @@ package com.example.lifetrack.screens
 
 import HomeTab
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,6 +44,7 @@ fun HomeScreen(rootNavController: NavController) {
                 )
                 NavigationBar (
                     containerColor = Color.White,
+                    modifier = Modifier.height(100.dp)
                 ){
                     val items = listOf(
                         BottomNavItem.Home,
@@ -61,7 +63,11 @@ fun HomeScreen(rootNavController: NavController) {
                             },
                             label = { Text(item.title) },
                             icon = {
-                                Icon(imageVector = item.icon, contentDescription = item.title)
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = item.title,
+                                    modifier = Modifier.size(30.dp)
+                                )
                             },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = DarkGreen,
