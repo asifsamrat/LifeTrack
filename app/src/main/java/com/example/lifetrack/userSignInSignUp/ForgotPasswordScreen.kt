@@ -34,7 +34,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,13 +44,11 @@ import com.example.lifetrack.ui.theme.BrightGreen
 import com.example.lifetrack.ui.theme.GreenLime
 
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun ForgotPasswordScreen(navController: NavController) {
 
     val authManager = AuthManager()
 
     var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
 
     Column(
@@ -118,116 +115,11 @@ fun RegisterScreen(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(20.dp))
 
-        //User Password
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Password",
-                textAlign = TextAlign.Start
-            )
-
-            Text(
-                text = " *",
-                color = Color.Red
-            )
-        }
-        TextField(
-            value = password,
-            onValueChange = { password = it },
-            placeholder = {
-                Text(
-                    "Enter your password",
-                    fontSize = 14.sp
-                )
-            },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
-            ),
-            modifier = Modifier.fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF5F5F5),
-                unfocusedContainerColor = Color(0xFFF5F5F5),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            textStyle = TextStyle(
-                color = Color.Black,
-                fontSize = 16.sp
-            )
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //User Password
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Confirm Password",
-                textAlign = TextAlign.Start
-            )
-
-            Text(
-                text = " *",
-                color = Color.Red
-            )
-        }
-        TextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            placeholder = {
-                Text(
-                    "Enter your confirm password",
-                    fontSize = 14.sp
-                )
-            },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
-            ),
-            modifier = Modifier.fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF5F5F5),
-                unfocusedContainerColor = Color(0xFFF5F5F5),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            textStyle = TextStyle(
-                color = Color.Black,
-                fontSize = 16.sp
-            )
-        )
-
-
-
         Button(
             onClick = {
-                if (password != confirmPassword) {
-                    message = "Passwords do not match"
-                    return@Button
-                }
-
-                authManager.register(email, password) { success, msg ->
+                authManager.forgotPassword(email) { success, msg ->
                     message = msg
                 }
-
-
             },
             modifier = Modifier.padding(top = 20.dp),
             shape = RoundedCornerShape(10.dp),
@@ -237,16 +129,16 @@ fun RegisterScreen(navController: NavController) {
             )
         ) {
             Text(
-                "REGISTER",
+                "Reset Password",
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
+
         }
 
-        //Text(text = message)
-        println(message)
+        Text(text = message)
 
         TextButton(onClick = {
             navController.popBackStack()

@@ -9,7 +9,7 @@ import androidx.navigation.navArgument
 import com.example.lifetrack.Adding.AddMemoryScreen
 import com.example.lifetrack.Adding.AddNoteScreen
 import com.example.lifetrack.Adding.AddReminderScreen
-import com.example.lifetrack.screens.ForgotPasswordScreen
+import com.example.lifetrack.userSignInSignUp.ForgotPasswordScreen
 import com.example.lifetrack.screens.HomeScreen
 import com.example.lifetrack.userSignInSignUp.LoginScreen
 import com.example.lifetrack.userSignInSignUp.RegisterScreen
@@ -18,7 +18,10 @@ import com.example.lifetrack.userSignInSignUp.RegisterScreen
 fun AppNavigator() {
     val navController = rememberNavController()
 
-    NavHost(navController, startDestination = Screen.Login.route) {
+    NavHost(
+        navController,
+        startDestination = Screen.Login.route
+    ) {
 
         composable(Screen.Login.route) {
             LoginScreen(navController)

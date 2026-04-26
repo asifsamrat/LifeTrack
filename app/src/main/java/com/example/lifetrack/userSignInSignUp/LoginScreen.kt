@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,6 +22,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,14 +34,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.lifetrack.auth.AuthManager
+import com.example.lifetrack.ui.theme.BrightGreen
+import com.example.lifetrack.ui.theme.DarkGreen
+import com.example.lifetrack.ui.theme.Green
+import com.example.lifetrack.ui.theme.GreenLime
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -49,7 +58,10 @@ fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
 
-    Box() {
+    Box(
+        modifier = Modifier.fillMaxSize()
+            .background(Color.White)
+    ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(20.dp),
             verticalArrangement = Arrangement.Center,
@@ -60,18 +72,39 @@ fun LoginScreen(navController: NavController) {
             Image(
                 painter = painterResource(id = R.drawable.life_track_logo_text_transperant),
                 contentDescription = "Top Logo",
-                modifier = Modifier.size(120.dp)
+                modifier = Modifier.size(150.dp)
                     .clip(shape = RoundedCornerShape(15.dp))
                     .background(Color.Transparent)
             )
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
-            OutlinedTextField(
+            //User Email
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Email",
+                    textAlign = TextAlign.Start
+                )
+
+                Text(
+                    text = " *",
+                    color = Color.Red
+                )
+            }
+
+            TextField(
                 value = email,
                 onValueChange = { email = it },
-                label = {
-                    Text("Email")
+                placeholder = {
+                    Text(
+                        "Enter your email",
+                        fontSize = 14.sp
+                    )
                 },
 
                 singleLine = true,
@@ -80,13 +113,46 @@ fun LoginScreen(navController: NavController) {
                     imeAction = ImeAction.Next
                 ),
                 modifier = Modifier.fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFFF5F5F5),
+                    unfocusedContainerColor = Color(0xFFF5F5F5),
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                textStyle = TextStyle(
+                    color = Color.Black,
+                    fontSize = 16.sp
+                )
             )
+            Spacer(modifier = Modifier.height(20.dp))
 
-            OutlinedTextField(
+            //User Password
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Password",
+                    textAlign = TextAlign.Start
+                )
+
+                Text(
+                    text = " *",
+                    color = Color.Red
+                )
+            }
+            TextField(
                 value = password,
                 onValueChange = { password = it },
-                label = {
-                    Text("Password")
+                placeholder = {
+                    Text(
+                        "Enter your password",
+                        fontSize = 14.sp
+                    )
                 },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
@@ -95,7 +161,20 @@ fun LoginScreen(navController: NavController) {
                     imeAction = ImeAction.Done
                 ),
                 modifier = Modifier.fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFFF5F5F5),
+                    unfocusedContainerColor = Color(0xFFF5F5F5),
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                textStyle = TextStyle(
+                    color = Color.Black,
+                    fontSize = 16.sp
+                )
             )
+
 
             Button(
                 onClick = {
@@ -108,33 +187,53 @@ fun LoginScreen(navController: NavController) {
                         }
                     }
                 },
-                modifier = Modifier.padding(top = 20.dp)
+                modifier = Modifier.padding(top = 20.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = BrightGreen,
+                    contentColor = Color.White
+                )
             ) {
-                Text("Login")
+                Text(
+                    "LOGIN",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
             }
 
-            Text(text = message)
-
+            //Text(text = message)
+            println(message)
+            Spacer(modifier = Modifier.height(20.dp))
             Row() {
                 TextButton(onClick = {
                     navController.navigate("forgot")
                 }) {
-                    Text("Forgot Password?")
+                    Text(
+                        "Forgot Password?",
+                        color = Color.Red
+                    )
                 }
 
                 TextButton(onClick = {
                     navController.navigate("register")
                 }) {
-                    Text("Create Account")
+                    Text(
+                        "Create Account",
+                        color = GreenLime
+                    )
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(20.dp))
 
 
         //Life Track Bottom Logo
         Box(
             modifier = Modifier.fillMaxSize()
-                .padding(bottom = 20.dp),
+                .padding(bottom = 15.dp),
         ) {
             Row(
                 modifier = Modifier
