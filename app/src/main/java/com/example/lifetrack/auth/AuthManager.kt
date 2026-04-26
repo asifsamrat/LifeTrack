@@ -12,7 +12,7 @@ class AuthManager {
                 if (it.isSuccessful) {
                     onResult(true, "Login Successful")
                 } else {
-                    onResult(false, it.exception?.message ?: "Error")
+                    onResult(false, "Enter Valid Email and Password")
                 }
             }
     }
@@ -33,7 +33,7 @@ class AuthManager {
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
-                    onResult(true, "Reset email sent")
+                    onResult(true, "Sent to mail")
                 } else {
                     onResult(false, it.exception?.message ?: "Error")
                 }

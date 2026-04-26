@@ -1,5 +1,6 @@
 package com.example.lifetrack.userSignInSignUp
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import com.example.lifetrack.R
@@ -33,8 +34,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -57,6 +60,8 @@ fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -175,14 +180,47 @@ fun LoginScreen(navController: NavController) {
                 )
             )
 
+            //Authentication Message
+            if (message != "") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = " *",
+                        color = Color.Red
+                    )
 
+                    Text(
+                        text = message,
+                        textAlign = TextAlign.Start,
+                        fontStyle = FontStyle.Italic,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.sp,
+                        color = Color.Red
+                    )
+                }
+            }
+
+
+            //Login Button
             Button(
                 onClick = {
-                    authManager.login(email, password) { success, msg ->
-                        message = msg
-                        if (success) {
-                            navController.navigate("home_main") {
-                                popUpTo("login") { inclusive = true }
+                    if (email.isBlank() || password.isEmpty()) {
+                        message = "Email and password are required"
+                        return@Button
+                    } else {
+                        authManager.login(email, password) { success, msg ->
+                            message = msg
+                            if (success) {
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                navController.navigate("home_main") {
+                                    popUpTo("login") {
+                                        inclusive = true
+                                    }
+                                }
                             }
                         }
                     }
@@ -203,8 +241,6 @@ fun LoginScreen(navController: NavController) {
                 )
             }
 
-            //Text(text = message)
-            println(message)
             Spacer(modifier = Modifier.height(20.dp))
             Row() {
                 TextButton(onClick = {
