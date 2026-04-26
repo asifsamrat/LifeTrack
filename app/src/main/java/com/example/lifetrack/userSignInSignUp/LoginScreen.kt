@@ -204,6 +204,12 @@ fun LoginScreen(navController: NavController) {
                 }
             }
 
+//            navController.navigate("home_main") {
+//                popUpTo("login") {
+//                    inclusive = true
+//                }
+//            }
+
 
             //Login Button
             Button(
@@ -225,6 +231,7 @@ fun LoginScreen(navController: NavController) {
                         }
                     }
                 },
+
                 modifier = Modifier.padding(top = 20.dp),
                 shape = RoundedCornerShape(10.dp),
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
