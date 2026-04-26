@@ -204,32 +204,32 @@ fun LoginScreen(navController: NavController) {
                 }
             }
 
-            navController.navigate("home_main") {
-                popUpTo("login") {
-                    inclusive = true
-                }
-            }
+//            navController.navigate("home_main") {
+//                popUpTo("login") {
+//                    inclusive = true
+//                }
+//            }
 
 
             //Login Button
             Button(
                 onClick = {
-//                    if (email.isBlank() || password.isEmpty()) {
-//                        message = "Email and password are required"
-//                        return@Button
-//                    } else {
-//                        authManager.login(email, password) { success, msg ->
-//                            message = msg
-//                            if (success) {
-//                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-//                                navController.navigate("home_main") {
-//                                    popUpTo("login") {
-//                                        inclusive = true
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
+                    if (email.isBlank() || password.isEmpty()) {
+                        message = "Email and password are required"
+                        return@Button
+                    } else {
+                        authManager.login(email, password) { success, msg ->
+                            message = msg
+                            if (success) {
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                navController.navigate("home_main") {
+                                    popUpTo("login") {
+                                        inclusive = true
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
 
                 modifier = Modifier.padding(top = 20.dp),
