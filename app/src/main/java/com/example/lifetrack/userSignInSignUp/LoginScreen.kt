@@ -287,7 +287,7 @@ fun LoginScreen(navController: NavController) {
                 horizontalArrangement = Arrangement.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.life_track_logo_transperant), // your logo
+                    painter = painterResource(id = R.drawable.life_track_logo_transperant),
                     contentDescription = "Bottom Logo",
                     modifier = Modifier.size(60.dp)
                         .clip(shape = RoundedCornerShape(15.dp))

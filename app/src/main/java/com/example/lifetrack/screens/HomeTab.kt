@@ -29,6 +29,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -74,19 +75,25 @@ fun HomeTab() {
             set(java.util.Calendar.HOUR_OF_DAY, 20)
             set(java.util.Calendar.MINUTE, 0)
             set(java.util.Calendar.SECOND, 0)
-        }.timeInMillis),
+        }.timeInMillis, "Oct 27th 25"),
 
         ReminderItem("Doctor Appointment", calendar.apply {
             set(java.util.Calendar.HOUR_OF_DAY, 14)
             set(java.util.Calendar.MINUTE, 30)
             set(java.util.Calendar.SECOND, 0)
-        }.timeInMillis),
+        }.timeInMillis, "Oct 28th 25"),
 
         ReminderItem("Grocery Shopping", calendar.apply {
             set(java.util.Calendar.HOUR_OF_DAY, 18)
             set(java.util.Calendar.MINUTE, 0)
             set(java.util.Calendar.SECOND, 0)
-        }.timeInMillis)
+        }.timeInMillis, "Oct 29th 25")
+    )
+
+    val upcomingMemories = listOf(
+        ReminderItem("Family Picnic", 0L, "Apr 2nd 26"),
+        ReminderItem("Graduation Day", 0L, "May 15th 26"),
+        ReminderItem("First Job Anniversary", 0L, "June 10th 26")
     )
 
 
@@ -221,25 +228,26 @@ fun HomeTab() {
                     .verticalScroll(rememberScrollState())
                     .padding(8.dp)
             ) {
-                Row() {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Reminder",
-                        tint = DarkGreen
+                        tint = DarkGreen,
+                        modifier = Modifier.size(20.dp)
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "Upcoming Reminders",
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(bottom = 16.dp),
+                        fontWeight = FontWeight.Bold,
                         color = DarkGreen
                     )
                 }
 
 
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.padding(vertical = 12.dp)
                 ) {
                     upcomingReminders.take(3).forEach {
                         ReminderCard(it)
@@ -247,28 +255,30 @@ fun HomeTab() {
                 }
 
                 Row(
-                    modifier = Modifier.padding(top = 16.dp)
+                    modifier = Modifier.padding(top = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.Default.PhotoLibrary,
                         contentDescription = "Memories",
-                        tint = DarkGreen
+                        tint = DarkGreen,
+                        modifier = Modifier.size(20.dp)
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "Upcoming Memories",
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(bottom = 16.dp),
+                        fontWeight = FontWeight.Bold,
                         color = DarkGreen
                     )
                 }
 
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.padding(vertical = 12.dp)
                 ) {
-                    upcomingReminders.take(3).forEach {
-                        ReminderCard(it)
+                    upcomingMemories.take(3).forEach {
+                        MemoryCard(it)
                     }
                 }
             }
@@ -315,68 +325,102 @@ fun HomeTab() {
 @Composable
 fun ReminderCard(reminder: ReminderItem) {
     val remainingTime by rememberCountdown(reminder.deadlineMillis)
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.3f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+
     Card(
-        modifier = Modifier.fillMaxWidth()
-            .border(1.dp, DarkGreen, RoundedCornerShape(10.dp))
-            .padding(8.dp)
-            .shadow(5.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = white,
-            contentColor = GreenLime
-        )
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = white),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = reminder.title,
-                    fontWeight = FontWeight.Medium
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = DarkGreen
                 )
-
                 Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Remaining Time: ",
-                        color = MaterialTheme.colorScheme.outline
+                        text = "Remaining: ",
+                        fontSize = 12.sp,
+                        color = Color.Gray
                     )
-
                     Text(
                         text = remainingTime,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = GreenLime
                     )
                 }
             }
 
-            // 🔴 Animated red indicator
-            val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-
-            val alpha by infiniteTransition.animateFloat(
-                initialValue = 1f,
-                targetValue = 0.3f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(800),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "alpha"
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .alpha(alpha)
+                    .background(Color.Red, CircleShape)
             )
+        }
+    }
+}
+
+@Composable
+fun MemoryCard(reminder: ReminderItem) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = white),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = reminder.title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = DarkGreen
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Date: ${reminder.date}",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = GreenLime
+                )
+                Text(
+                    text = "A beautiful memory captured",
+                    fontSize = 11.sp,
+                    color = Color.Gray
+                )
+            }
 
             Icon(
                 imageVector = Icons.Default.Circle,
-                contentDescription = "Active Reminder",
-                tint = Color.Red.copy(alpha = alpha),
-                modifier = Modifier.size(12.dp)
+                contentDescription = null,
+                tint = GreenLight,
+                modifier = Modifier.size(10.dp)
             )
         }
     }
@@ -413,5 +457,6 @@ fun rememberCountdown(deadlineMillis: Long): State<String> {
 //data class ReminderItem(val title: String, val time: String)
 data class ReminderItem(
     val title: String,
-    val deadlineMillis: Long
+    val deadlineMillis: Long,
+    val date: String = ""
 )

@@ -1,5 +1,6 @@
 package com.example.lifetrack.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -26,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import com.example.lifetrack.DataModel.Memory
+import com.example.lifetrack.R
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.Green
 import com.example.lifetrack.ui.theme.GreenLight
@@ -71,19 +74,27 @@ fun MemoriesScreen() {
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 title = {
-                    Text("My Memories",
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.life_track_logo_transperant),
+                            contentDescription = "Logo",
+                            modifier = Modifier.size(60.dp)
+                                .clip(shape = RoundedCornerShape(15.dp))
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "My Reminders",
+                            fontWeight = FontWeight.Bold,
+                            color = DarkGreen
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                ),
-                modifier = Modifier.background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(GreenLight, GreenLime, Green)
-                    )
+                    containerColor = white
                 )
             )
         }
