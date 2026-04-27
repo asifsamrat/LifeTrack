@@ -173,10 +173,18 @@ fun HomeScreen(rootNavController: NavController) {
             startDestination = BottomNavItem.Home.route,
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable(BottomNavItem.Home.route) { HomeTab() }
-            composable(BottomNavItem.Notes.route) { NotesScreen() }
-            composable(BottomNavItem.Reminder.route) { ReminderScreen() }
-            composable(BottomNavItem.Memories.route) { MemoriesScreen() }
+            composable(BottomNavItem.Home.route) {
+                HomeTab()
+            }
+            composable(BottomNavItem.Notes.route) {
+                NotesScreen()
+            }
+            composable(BottomNavItem.Reminder.route) {
+                ReminderScreen()
+            }
+            composable(BottomNavItem.Memories.route) {
+                MemoriesScreen()
+            }
         }
     }
 }

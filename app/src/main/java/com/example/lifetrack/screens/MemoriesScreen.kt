@@ -87,7 +87,7 @@ fun MemoriesScreen() {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "My Reminders",
+                            text = "My Memories",
                             fontWeight = FontWeight.Bold,
                             color = DarkGreen
                         )
