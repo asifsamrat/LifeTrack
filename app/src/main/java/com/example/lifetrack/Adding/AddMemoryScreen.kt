@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.lifetrack.DataModel.Memory
+import com.example.lifetrack.data.model.Memory
 import com.example.lifetrack.R
 import com.example.lifetrack.Saves.saveMemory
 import com.example.lifetrack.Uploads.MemoryFiles

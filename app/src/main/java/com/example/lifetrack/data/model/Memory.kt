@@ -1,4 +1,4 @@
-package com.example.lifetrack.DataModel
+package com.example.lifetrack.data.model
 
 data class Memory (
     val title: String = "",

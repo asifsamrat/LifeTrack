@@ -1,5 +1,8 @@
-package com.example.lifetrack.screens
+package com.example.lifetrack.ui.screens
 
+import android.net.Uri
+import android.view.ViewGroup
+import android.widget.VideoView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -27,12 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
-import com.example.lifetrack.DataModel.Memory
+import com.example.lifetrack.data.model.Memory
 import com.example.lifetrack.R
 import com.example.lifetrack.ui.theme.DarkGreen
-import com.example.lifetrack.ui.theme.Green
 import com.example.lifetrack.ui.theme.GreenLight
-import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -254,11 +254,11 @@ fun VideoCard(videoUrl: String) {
         AndroidView(
             factory = { context ->
                 // Create a VideoView or a player (like ExoPlayer) and set videoUrl
-                val videoView = android.widget.VideoView(context)
-                videoView.setVideoURI(android.net.Uri.parse(videoUrl))
-                videoView.layoutParams = android.view.ViewGroup.LayoutParams(
-                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                val videoView = VideoView(context)
+                videoView.setVideoURI(Uri.parse(videoUrl))
+                videoView.layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
                 )
                 videoView.setOnPreparedListener { mediaPlayer ->
                     mediaPlayer.isLooping = true

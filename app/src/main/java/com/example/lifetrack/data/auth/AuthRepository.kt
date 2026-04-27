@@ -1,8 +1,8 @@
-package com.example.lifetrack.auth
+package com.example.lifetrack.data.auth
 
 import com.google.firebase.auth.FirebaseAuth
 
-class AuthManager {
+class AuthRepository {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 

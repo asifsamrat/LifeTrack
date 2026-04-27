@@ -1,8 +1,7 @@
-package com.example.lifetrack.screens
+package com.example.lifetrack.ui.screens
 
 import HomeTab
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons

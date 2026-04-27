@@ -1,6 +1,6 @@
 package com.example.lifetrack.Saves
 
-import com.example.lifetrack.DataModel.Reminder
+import com.example.lifetrack.data.model.Reminder
 import com.google.firebase.firestore.FirebaseFirestore
 
 fun saveReminder(reminder: Reminder, onComplete: (Boolean) -> Unit) {

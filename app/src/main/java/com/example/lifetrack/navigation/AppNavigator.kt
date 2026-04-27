@@ -9,10 +9,10 @@ import androidx.navigation.navArgument
 import com.example.lifetrack.Adding.AddMemoryScreen
 import com.example.lifetrack.Adding.AddNoteScreen
 import com.example.lifetrack.Adding.AddReminderScreen
-import com.example.lifetrack.userSignInSignUp.ForgotPasswordScreen
-import com.example.lifetrack.screens.HomeScreen
-import com.example.lifetrack.userSignInSignUp.LoginScreen
-import com.example.lifetrack.userSignInSignUp.RegisterScreen
+import com.example.lifetrack.ui.screens.authenticationScreen.ForgotPasswordScreen
+import com.example.lifetrack.ui.screens.HomeScreen
+import com.example.lifetrack.ui.screens.authenticationScreen.LoginScreen
+import com.example.lifetrack.ui.screens.authenticationScreen.RegisterScreen
 
 @Composable
 fun AppNavigator() {

@@ -1,6 +1,6 @@
 package com.example.lifetrack.Saves
 
-import com.example.lifetrack.DataModel.Memory
+import com.example.lifetrack.data.model.Memory
 
 fun saveMemory(memory: Memory, onResult: (Boolean) -> Unit) {
     val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()

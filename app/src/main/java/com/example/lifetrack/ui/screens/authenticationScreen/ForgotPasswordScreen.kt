@@ -1,4 +1,4 @@
-package com.example.lifetrack.userSignInSignUp
+package com.example.lifetrack.ui.screens.authenticationScreen
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -15,8 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -37,24 +36,21 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.lifetrack.R
-import com.example.lifetrack.auth.AuthManager
+import com.example.lifetrack.data.auth.AuthRepository
 import com.example.lifetrack.ui.theme.BrightGreen
 import com.example.lifetrack.ui.theme.GreenLime
 
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun ForgotPasswordScreen(navController: NavController) {
 
-    val authManager = AuthManager()
+    val authRepository = AuthRepository()
 
     var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
 
     val context = LocalContext.current
@@ -121,104 +117,6 @@ fun RegisterScreen(navController: NavController) {
                 fontSize = 16.sp
             )
         )
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //User Password
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Password",
-                textAlign = TextAlign.Start
-            )
-
-            Text(
-                text = " *",
-                color = Color.Red
-            )
-        }
-        TextField(
-            value = password,
-            onValueChange = { password = it },
-            placeholder = {
-                Text(
-                    "Enter your password",
-                    fontSize = 14.sp
-                )
-            },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
-            ),
-            modifier = Modifier.fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF5F5F5),
-                unfocusedContainerColor = Color(0xFFF5F5F5),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            textStyle = TextStyle(
-                color = Color.Black,
-                fontSize = 16.sp
-            )
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        //User Password
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Confirm Password",
-                textAlign = TextAlign.Start
-            )
-
-            Text(
-                text = " *",
-                color = Color.Red
-            )
-        }
-        TextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            placeholder = {
-                Text(
-                    "Enter your confirm password",
-                    fontSize = 14.sp
-                )
-            },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
-            ),
-            modifier = Modifier.fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF5F5F5),
-                unfocusedContainerColor = Color(0xFFF5F5F5),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            textStyle = TextStyle(
-                color = Color.Black,
-                fontSize = 16.sp
-            )
-        )
-
 
         //Authentication Message
         if (message != "") {
@@ -244,49 +142,41 @@ fun RegisterScreen(navController: NavController) {
             }
         }
 
-
-
         Button(
             onClick = {
-                if (email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
-                    message = "Email and passwords are required"
+                if (email.isBlank()) {
+                    message = "Email is required"
                     return@Button
                 }
-
-                if (password != confirmPassword) {
-                    message = "Passwords don't match"
-                    return@Button
-                }
-
-                authManager.register(email, password) { success, msg ->
+                authRepository.forgotPassword(email) { success, msg ->
                     message = msg
                     if (success) {
                         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         navController.navigate("login") {
-                            popUpTo("register") {
+                            popUpTo("forgot") {
                                 inclusive = true
                             }
                         }
                     }
                 }
-
-
             },
             modifier = Modifier.padding(top = 20.dp),
             shape = RoundedCornerShape(10.dp),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+            colors = ButtonDefaults.buttonColors(
                 containerColor = BrightGreen,
                 contentColor = Color.White
             )
         ) {
             Text(
-                "REGISTER",
+                "Reset Password",
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
+
         }
+
 
         TextButton(onClick = {
             navController.popBackStack()

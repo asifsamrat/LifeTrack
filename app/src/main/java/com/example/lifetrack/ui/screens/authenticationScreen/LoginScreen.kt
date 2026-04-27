@@ -1,6 +1,5 @@
-package com.example.lifetrack.userSignInSignUp
+package com.example.lifetrack.ui.screens.authenticationScreen
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import com.example.lifetrack.R
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,8 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -46,16 +43,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.lifetrack.auth.AuthManager
+import com.example.lifetrack.data.auth.AuthRepository
 import com.example.lifetrack.ui.theme.BrightGreen
-import com.example.lifetrack.ui.theme.DarkGreen
-import com.example.lifetrack.ui.theme.Green
 import com.example.lifetrack.ui.theme.GreenLime
 
 @Composable
 fun LoginScreen(navController: NavController) {
 
-    val authManager = AuthManager()
+    val authRepository = AuthRepository()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -204,37 +199,37 @@ fun LoginScreen(navController: NavController) {
                 }
             }
 
-//            navController.navigate("home_main") {
-//                popUpTo("login") {
-//                    inclusive = true
-//                }
-//            }
+            navController.navigate("home_main") {
+                popUpTo("login") {
+                    inclusive = true
+                }
+            }
 
 
             //Login Button
             Button(
                 onClick = {
-                    if (email.isBlank() || password.isEmpty()) {
-                        message = "Email and password are required"
-                        return@Button
-                    } else {
-                        authManager.login(email, password) { success, msg ->
-                            message = msg
-                            if (success) {
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                navController.navigate("home_main") {
-                                    popUpTo("login") {
-                                        inclusive = true
-                                    }
-                                }
-                            }
-                        }
-                    }
+//                    if (email.isBlank() || password.isEmpty()) {
+//                        message = "Email and password are required"
+//                        return@Button
+//                    } else {
+//                        authManager.login(email, password) { success, msg ->
+//                            message = msg
+//                            if (success) {
+//                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+//                                navController.navigate("home_main") {
+//                                    popUpTo("login") {
+//                                        inclusive = true
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
                 },
 
                 modifier = Modifier.padding(top = 20.dp),
                 shape = RoundedCornerShape(10.dp),
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                colors = ButtonDefaults.buttonColors(
                     containerColor = BrightGreen,
                     contentColor = Color.White
                 )

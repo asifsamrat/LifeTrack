@@ -8,12 +8,9 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,13 +38,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.lifetrack.R
-import com.example.lifetrack.navigation.BottomNavItem.Home.icon
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.Green
 import com.example.lifetrack.ui.theme.GreenLight
 import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
-import com.google.common.base.Defaults
+import kotlinx.coroutines.delay
+import java.util.Calendar
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,24 +66,24 @@ fun HomeTab() {
 
 
     //Setting the custom time for showing the remaining time
-    val calendar = java.util.Calendar.getInstance()
+    val calendar = Calendar.getInstance()
     val upcomingReminders = listOf(
         ReminderItem("Meeting with Team", calendar.apply {
-            set(java.util.Calendar.HOUR_OF_DAY, 20)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
+            set(Calendar.HOUR_OF_DAY, 20)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
         }.timeInMillis, "Oct 27th 25"),
 
         ReminderItem("Doctor Appointment", calendar.apply {
-            set(java.util.Calendar.HOUR_OF_DAY, 14)
-            set(java.util.Calendar.MINUTE, 30)
-            set(java.util.Calendar.SECOND, 0)
+            set(Calendar.HOUR_OF_DAY, 14)
+            set(Calendar.MINUTE, 30)
+            set(Calendar.SECOND, 0)
         }.timeInMillis, "Oct 28th 25"),
 
         ReminderItem("Grocery Shopping", calendar.apply {
-            set(java.util.Calendar.HOUR_OF_DAY, 18)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
+            set(Calendar.HOUR_OF_DAY, 18)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
         }.timeInMillis, "Oct 29th 25")
     )
 
@@ -447,7 +444,7 @@ fun rememberCountdown(deadlineMillis: Long): State<String> {
     LaunchedEffect(deadlineMillis) {
         while (true) {
             time.value = getRemainingTime(deadlineMillis)
-            kotlinx.coroutines.delay(1000L)
+            delay(1000L)
         }
     }
 
