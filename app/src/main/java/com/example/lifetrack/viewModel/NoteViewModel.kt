@@ -18,4 +18,11 @@ class NoteViewModel : ViewModel() {
             isSuccess.value = success
         }
     }
+
+    //Get Note from the firebase based of noteType
+    fun getNotesByType(userId: String, noteType: String, onResult: (List<Note>) -> Unit) {
+        noteRepository.getNotesByType(userId, noteType) { notes ->
+            onResult(notes)
+        }
+    }
 }

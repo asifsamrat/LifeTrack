@@ -1,6 +1,7 @@
 package com.example.lifetrack.ui.screens.navbarScreens
 
 import HomeTab
+import NoteViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -176,7 +178,8 @@ fun HomeScreen(rootNavController: NavController) {
                 HomeTab()
             }
             composable(BottomNavItem.Notes.route) {
-                NotesScreen()
+                val noteViewModel: NoteViewModel = viewModel()
+                NotesScreen(rootNavController, noteViewModel)
             }
             composable(BottomNavItem.Reminder.route) {
                 ReminderScreen()

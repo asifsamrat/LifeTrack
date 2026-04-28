@@ -1,75 +1,97 @@
 package com.example.lifetrack.navigation
-
 import AuthViewModel
-import MemoryViewModel
 import NoteViewModel
-import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import androidx.navigation.navArgument
-import com.example.lifetrack.ui.screens.editors.AddMemoryScreen
-import com.example.lifetrack.ui.screens.editors.AddNoteScreen
-import com.example.lifetrack.ui.screens.editors.AddReminderScreen
-import com.example.lifetrack.ui.screens.authenticationScreens.ForgotPasswordScreen
+import com.example.lifetrack.ui.screens.authenticationScreens.*
 import com.example.lifetrack.ui.screens.navbarScreens.HomeScreen
-import com.example.lifetrack.ui.screens.authenticationScreens.LoginScreen
-import com.example.lifetrack.ui.screens.authenticationScreens.RegisterScreen
+import com.example.lifetrack.ui.screens.editors.*
 
-@SuppressLint("ViewModelConstructorInComposable")
+object Routes {
+    const val LOGIN = "login"
+    const val REGISTER = "register"
+    const val FORGOT = "forgot"
+    const val HOME = "home_main"
+
+    const val ADD_NOTE = "add_note"
+    const val ADD_SPECIAL_NOTE = "add_special_note"
+
+    const val ADD_MEMORY = "add_memory"
+
+    const val ADD_REMINDER = "add_reminder/{title}"
+    const val ADD_SPECIAL_REMINDER = "add_special_reminder"
+    const val ADD_EVENT_REMINDER = "add_event_reminder"
+}
+
 @Composable
 fun AppNavigator() {
+
     val navController = rememberNavController()
-    val authViewModel = AuthViewModel()
-    val memoryViewModel = MemoryViewModel()
-    val noteViewModel = NoteViewModel()
 
     NavHost(
-        navController,
-        startDestination = Screen.Login.route
+        navController = navController,
+        startDestination = Routes.LOGIN
     ) {
 
-        composable(Screen.Login.route) {
+        /* ---------------- AUTH FLOW ---------------- */
+
+        composable(Routes.LOGIN) {
+            val authViewModel: AuthViewModel = viewModel()
             LoginScreen(navController, authViewModel)
         }
 
-        composable(Screen.Register.route) {
+        composable(Routes.REGISTER) {
+            val authViewModel: AuthViewModel = viewModel()
             RegisterScreen(navController, authViewModel)
         }
 
-        composable(Screen.Forgot.route) {
+        composable(Routes.FORGOT) {
+            val authViewModel: AuthViewModel = viewModel()
             ForgotPasswordScreen(navController, authViewModel)
         }
 
-        composable(Screen.HomeMain.route) {
-            HomeScreen(rootNavController = navController)
+        /* ---------------- MAIN ENTRY ---------------- */
+
+        composable(Routes.HOME) {
+            HomeScreen(navController)
         }
 
-        // Add notes button
-        composable("add_note") {
-            AddNoteScreen("Daily Note",navController, noteViewModel)
+        /* ---------------- ADD SCREENS ---------------- */
+
+        composable(Routes.ADD_NOTE) {
+            val noteViewModel: NoteViewModel = viewModel()
+            AddNoteScreen("Daily Note", navController, noteViewModel)
         }
-        composable("add_special_note") {
+
+        composable(Routes.ADD_SPECIAL_NOTE) {
+            val noteViewModel: NoteViewModel = viewModel()
             AddNoteScreen("Special Note", navController, noteViewModel)
         }
-        
+
         composable(
-            route = "add_reminder/{initialTitle}",
-            arguments = listOf(navArgument("initialTitle") { type = NavType.StringType })
+            Routes.ADD_REMINDER,
+            arguments = listOf(navArgument("title") {
+                type = NavType.StringType
+            })
         ) { backStackEntry ->
-            val initialTitle = backStackEntry.arguments?.getString("initialTitle") ?: ""
-            AddReminderScreen(initialTitle)
+            val title = backStackEntry.arguments?.getString("title") ?: ""
+            AddReminderScreen(title)
         }
 
-        composable("add_special_reminder") { AddReminderScreen("Special Day Reminder") }
-        composable("add_event_reminder") { AddReminderScreen("Event Reminder") }
-
-        //Adding memories to the firebase
-        composable("add_memory") {
-            AddMemoryScreen(navController, memoryViewModel)
+        composable(Routes.ADD_SPECIAL_REMINDER) {
+            AddReminderScreen("Special Day Reminder")
         }
 
+        composable(Routes.ADD_EVENT_REMINDER) {
+            AddReminderScreen("Event Reminder")
+        }
+
+//        composable(Routes.ADD_MEMORY) {
+//            val memoryViewModel: MemoryViewModel = viewModel()
+//            AddMemoryScreen(navController, memoryViewModel)
+//        }
     }
 }

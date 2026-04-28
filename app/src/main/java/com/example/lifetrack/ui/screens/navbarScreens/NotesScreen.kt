@@ -1,5 +1,6 @@
 package com.example.lifetrack.ui.screens.navbarScreens
 
+import NoteViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,32 +39,30 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.lifetrack.R
+import com.example.lifetrack.data.model.Note
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLight
 import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
-
-data class Note(val title: String, val description: String, val date: String)
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotesScreen() {
-    var selectedTab by remember { mutableStateOf("Daily") }
+fun NotesScreen(rootNavController: NavController, noteViewModel: NoteViewModel) {
+    var selectedTab by remember { mutableStateOf("Daily Note") }
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    
+    var noteList by remember { mutableStateOf<List<Note>>(emptyList()) }
 
-    val dailyNotes = listOf(
-        Note("Daily Scrum", "Morning meeting with the development team.", "2023-10-27"),
-        Note("Grocery List", "Buy milk, eggs, bread, and fruits.", "2023-10-27"),
-        Note("Workout", "Go to the gym for a 45-minute cardio session.", "2023-10-26")
-    )
-
-    val specialNotes = listOf(
-        Note("Anniversary Plan", "Book a table at the rooftop restaurant.", "2023-11-15"),
-        Note("Project Launch", "Finalize the deployment checklist.", "2023-12-01"),
-        Note("Gift Ideas", "Buy a new watch for Dad's birthday.", "2023-11-05")
-    )
-
-    val currentNotes = if (selectedTab == "Daily") dailyNotes else specialNotes
+    LaunchedEffect(selectedTab, userId) {
+        if (userId.isNotEmpty()) {
+            noteViewModel.getNotesByType(userId, selectedTab) { notes ->
+                noteList = notes
+            }
+        }
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -73,8 +73,8 @@ fun NotesScreen() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.life_track_logo_transperant), // your logo
-                            contentDescription = "Bottom Logo",
+                            painter = painterResource(id = R.drawable.life_track_logo_transperant),
+                            contentDescription = "Logo",
                             modifier = Modifier.size(60.dp)
                                 .clip(shape = RoundedCornerShape(15.dp))
                         )
@@ -110,14 +110,14 @@ fun NotesScreen() {
             ) {
                 TabButton(
                     text = "Daily Notes",
-                    isSelected = selectedTab == "Daily",
-                    onClick = { selectedTab = "Daily" },
+                    isSelected = selectedTab == "Daily Note",
+                    onClick = { selectedTab = "Daily Note" },
                     modifier = Modifier.weight(1f)
                 )
                 TabButton(
                     text = "Special Notes",
-                    isSelected = selectedTab == "Special",
-                    onClick = { selectedTab = "Special" },
+                    isSelected = selectedTab == "Special Note",
+                    onClick = { selectedTab = "Special Note" },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -128,7 +128,7 @@ fun NotesScreen() {
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                items(currentNotes) { note ->
+                items(noteList) { note ->
                     NoteItem(note)
                 }
             }
