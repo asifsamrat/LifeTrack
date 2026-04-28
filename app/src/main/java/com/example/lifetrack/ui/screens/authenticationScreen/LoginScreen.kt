@@ -1,5 +1,7 @@
 package com.example.lifetrack.ui.screens.authenticationScreen
 
+import AuthViewModel
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import com.example.lifetrack.R
@@ -23,6 +25,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,13 +51,14 @@ import com.example.lifetrack.ui.theme.BrightGreen
 import com.example.lifetrack.ui.theme.GreenLime
 
 @Composable
-fun LoginScreen(navController: NavController) {
-
-    val authRepository = AuthRepository()
+fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
+
+    //For Login Message and Success
+    var message by viewModel.loginMessage
+    var success by viewModel.loginSuccess
 
     val context = LocalContext.current
 
@@ -176,7 +180,7 @@ fun LoginScreen(navController: NavController) {
             )
 
             //Authentication Message
-            if (message != "") {
+            if (message != "" && !success) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -197,34 +201,36 @@ fun LoginScreen(navController: NavController) {
                         color = Color.Red
                     )
                 }
+
             }
 
-            navController.navigate("home_main") {
-                popUpTo("login") {
-                    inclusive = true
+            LaunchedEffect(success) {
+                if (success) {
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    navController.navigate("home_main") {
+                        popUpTo("login") {
+                            inclusive = true
+                        }
+                    }
                 }
             }
+
+
+//            navController.navigate("home_main") {
+//                popUpTo("login") {
+//                    inclusive = true
+//                }
+//            }
 
 
             //Login Button
             Button(
                 onClick = {
-//                    if (email.isBlank() || password.isEmpty()) {
-//                        message = "Email and password are required"
-//                        return@Button
-//                    } else {
-//                        authManager.login(email, password) { success, msg ->
-//                            message = msg
-//                            if (success) {
-//                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-//                                navController.navigate("home_main") {
-//                                    popUpTo("login") {
-//                                        inclusive = true
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
+                    if (email.isBlank() || password.isBlank()) {
+                        viewModel.loginMessage.value = "Email and passwords are required"
+                    } else {
+                        viewModel.login(email, password)
+                    }
                 },
 
                 modifier = Modifier.padding(top = 20.dp),
@@ -242,6 +248,7 @@ fun LoginScreen(navController: NavController) {
                     fontSize = 16.sp
                 )
             }
+
 
             Spacer(modifier = Modifier.height(20.dp))
             Row() {
@@ -304,6 +311,5 @@ fun LoginScreen(navController: NavController) {
             }
         }
     }
-
 
 }

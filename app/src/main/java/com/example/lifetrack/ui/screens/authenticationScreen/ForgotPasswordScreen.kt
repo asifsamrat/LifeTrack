@@ -1,5 +1,6 @@
 package com.example.lifetrack.ui.screens.authenticationScreen
 
+import AuthViewModel
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,6 +22,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,12 +48,11 @@ import com.example.lifetrack.ui.theme.BrightGreen
 import com.example.lifetrack.ui.theme.GreenLime
 
 @Composable
-fun ForgotPasswordScreen(navController: NavController) {
-
-    val authRepository = AuthRepository()
+fun ForgotPasswordScreen(navController: NavController, viewModel: AuthViewModel) {
 
     var email by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
+    var message by viewModel.forgotMessage
+    var success by viewModel.forgotSuccess
 
     val context = LocalContext.current
 
@@ -119,7 +120,7 @@ fun ForgotPasswordScreen(navController: NavController) {
         )
 
         //Authentication Message
-        if (message != "") {
+        if (message != "" && !success) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -142,23 +143,25 @@ fun ForgotPasswordScreen(navController: NavController) {
             }
         }
 
+        //Forgot Password and navigate to Login Screen
+        LaunchedEffect(success) {
+            if (success) {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                navController.navigate("login") {
+                    popUpTo("forgot") {
+                        inclusive = true
+                    }
+                }
+            }
+        }
+
         Button(
             onClick = {
                 if (email.isBlank()) {
-                    message = "Email is required"
+                    viewModel.forgotMessage.value = "Email is required"
                     return@Button
                 }
-                authRepository.forgotPassword(email) { success, msg ->
-                    message = msg
-                    if (success) {
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                        navController.navigate("login") {
-                            popUpTo("forgot") {
-                                inclusive = true
-                            }
-                        }
-                    }
-                }
+                viewModel.forgotPassword(email)
             },
             modifier = Modifier.padding(top = 20.dp),
             shape = RoundedCornerShape(10.dp),

@@ -1,5 +1,7 @@
 package com.example.lifetrack.navigation
 
+import AuthViewModel
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,9 +16,11 @@ import com.example.lifetrack.ui.screens.HomeScreen
 import com.example.lifetrack.ui.screens.authenticationScreen.LoginScreen
 import com.example.lifetrack.ui.screens.authenticationScreen.RegisterScreen
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Composable
 fun AppNavigator() {
     val navController = rememberNavController()
+    val authViewModel = AuthViewModel()
 
     NavHost(
         navController,
@@ -24,15 +28,15 @@ fun AppNavigator() {
     ) {
 
         composable(Screen.Login.route) {
-            LoginScreen(navController)
+            LoginScreen(navController, authViewModel)
         }
 
         composable(Screen.Register.route) {
-            RegisterScreen(navController)
+            RegisterScreen(navController, authViewModel)
         }
 
         composable(Screen.Forgot.route) {
-            ForgotPasswordScreen(navController)
+            ForgotPasswordScreen(navController, authViewModel)
         }
 
         composable(Screen.HomeMain.route) {

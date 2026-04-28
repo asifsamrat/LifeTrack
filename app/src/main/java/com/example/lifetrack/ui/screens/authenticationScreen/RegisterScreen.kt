@@ -1,5 +1,6 @@
 package com.example.lifetrack.ui.screens.authenticationScreen
 
+import AuthViewModel
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,6 +22,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,14 +49,15 @@ import com.example.lifetrack.ui.theme.BrightGreen
 import com.example.lifetrack.ui.theme.GreenLime
 
 @Composable
-fun RegisterScreen(navController: NavController) {
-
-    val authRepository = AuthRepository()
+fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
+
+    //For Register Message and Success
+    var message by viewModel.registerMessage
+    var success by viewModel.registerSuccess
 
     val context = LocalContext.current
 
@@ -139,6 +142,7 @@ fun RegisterScreen(navController: NavController) {
                 color = Color.Red
             )
         }
+
         TextField(
             value = password,
             onValueChange = { password = it },
@@ -220,7 +224,7 @@ fun RegisterScreen(navController: NavController) {
 
 
         //Authentication Message
-        if (message != "") {
+        if (message != "" && !success) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -243,34 +247,35 @@ fun RegisterScreen(navController: NavController) {
             }
         }
 
+        //Register and navigate to Login Screen
+        LaunchedEffect(success) {
+            if (success) {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                navController.navigate("login") {
+                    popUpTo("register") {
+                        inclusive = true
+                    }
+                }
+            }
+        }
 
 
         Button(
             onClick = {
                 if (email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
-                    message = "Email and passwords are required"
+                    viewModel.registerMessage.value = "Email and passwords are required"
                     return@Button
                 }
 
                 if (password != confirmPassword) {
-                    message = "Passwords don't match"
+                    viewModel.registerMessage.value = "Passwords don't match"
                     return@Button
                 }
 
-                authRepository.register(email, password) { success, msg ->
-                    message = msg
-                    if (success) {
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                        navController.navigate("login") {
-                            popUpTo("register") {
-                                inclusive = true
-                            }
-                        }
-                    }
-                }
-
-
+                // Register the user
+                viewModel.register(email, password)
             },
+
             modifier = Modifier.padding(top = 20.dp),
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(
