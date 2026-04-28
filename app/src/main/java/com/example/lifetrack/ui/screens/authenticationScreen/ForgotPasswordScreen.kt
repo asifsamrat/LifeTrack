@@ -152,6 +152,8 @@ fun ForgotPasswordScreen(navController: NavController, viewModel: AuthViewModel)
                         inclusive = true
                     }
                 }
+                viewModel.forgotMessage.value = ""
+                viewModel.forgotSuccess.value = false
             }
         }
 
@@ -183,6 +185,7 @@ fun ForgotPasswordScreen(navController: NavController, viewModel: AuthViewModel)
 
         TextButton(onClick = {
             navController.popBackStack()
+            viewModel.forgotMessage.value = ""
         }) {
             Text(
                 "Back to Login",

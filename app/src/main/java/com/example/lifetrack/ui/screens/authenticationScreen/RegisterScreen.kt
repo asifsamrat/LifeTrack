@@ -256,6 +256,8 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
                         inclusive = true
                     }
                 }
+                viewModel.registerMessage.value = ""
+                viewModel.registerSuccess.value = false
             }
         }
 
@@ -294,6 +296,7 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
 
         TextButton(onClick = {
             navController.popBackStack()
+            viewModel.registerMessage.value = ""
         }) {
             Text(
                 "Back to Login",

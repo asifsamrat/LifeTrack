@@ -201,7 +201,6 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
                         color = Color.Red
                     )
                 }
-
             }
 
             LaunchedEffect(success) {
@@ -212,6 +211,8 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
                             inclusive = true
                         }
                     }
+                    viewModel.loginMessage.value = ""
+                    viewModel.loginSuccess.value = false
                 }
             }
 
@@ -251,9 +252,10 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
 
 
             Spacer(modifier = Modifier.height(20.dp))
-            Row() {
+            Row{
                 TextButton(onClick = {
                     navController.navigate("forgot")
+                    viewModel.loginMessage.value = ""
                 }) {
                     Text(
                         "Forgot Password?",
@@ -263,6 +265,7 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
 
                 TextButton(onClick = {
                     navController.navigate("register")
+                    viewModel.loginMessage.value = ""
                 }) {
                     Text(
                         "Create Account",
