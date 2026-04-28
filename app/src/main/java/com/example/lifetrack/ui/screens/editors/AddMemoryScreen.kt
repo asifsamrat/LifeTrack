@@ -1,5 +1,6 @@
-package com.example.lifetrack.Adding
+package com.example.lifetrack.ui.screens.editors
 
+import MemoryViewModel
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -32,14 +33,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.lifetrack.data.model.Memory
 import com.example.lifetrack.R
-import com.example.lifetrack.Saves.saveMemory
-import com.example.lifetrack.Uploads.MemoryFiles
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -47,7 +47,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddMemoryScreen() {
+fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
 
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -57,10 +57,8 @@ fun AddMemoryScreen() {
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var selectedVideos by remember { mutableStateOf<List<Uri>>(emptyList()) }
 
-    var isSaving by remember { mutableStateOf(false) }
-
     val context = LocalContext.current
-    val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
@@ -74,6 +72,22 @@ fun AddMemoryScreen() {
 
     val videoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
         selectedVideos = (selectedVideos + uris).distinct()
+    }
+
+    // React to ViewModel state changes
+    LaunchedEffect(viewModel.isSuccess.value) {
+        if (viewModel.isSuccess.value) {
+            Toast.makeText(context, viewModel.message.value, Toast.LENGTH_SHORT).show()
+            viewModel.resetState()
+            navController.popBackStack()
+        }
+    }
+
+    LaunchedEffect(viewModel.message.value) {
+        if (viewModel.message.value.isNotEmpty() && !viewModel.isSuccess.value) {
+            Toast.makeText(context, viewModel.message.value, Toast.LENGTH_SHORT).show()
+            viewModel.resetState()
+        }
     }
 
     // Date Picker Dialog
@@ -267,35 +281,15 @@ fun AddMemoryScreen() {
 
             Button(
                 onClick = {
-                    if (title.isEmpty() || userId.isEmpty()) {
-                        Toast.makeText(context, "Please enter title and login", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    
-                    isSaving = true
-                    // Step 1: upload images
-                    MemoryFiles(selectedImages, "images") { imageUrls ->
-                        // Step 2: upload videos
-                        MemoryFiles(selectedVideos, "videos") { videoUrls ->
-                            val memory = Memory(
-                                title = title,
-                                description = description,
-                                date = date,
-                                time = time,
-                                imageUrls = imageUrls,
-                                videoUrls = videoUrls,
-                                userId = userId
-                            )
-                            saveMemory(memory) { success ->
-                                isSaving = false
-                                if (success) {
-                                    Toast.makeText(context, "Memory Saved!", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    Toast.makeText(context, "Failed to save to database", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-                    }
+                    viewModel.saveMemory(
+                        title = title,
+                        description = description,
+                        date = date,
+                        time = time,
+                        images = selectedImages,
+                        videos = selectedVideos,
+                        userId = userId
+                    )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -304,9 +298,9 @@ fun AddMemoryScreen() {
                 colors = ButtonDefaults.buttonColors(
                     containerColor = DarkGreen
                 ),
-                enabled = !isSaving
+                enabled = !viewModel.isSaving.value
             ) {
-                if (isSaving) {
+                if (viewModel.isSaving.value) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                 } else {
                     Text(

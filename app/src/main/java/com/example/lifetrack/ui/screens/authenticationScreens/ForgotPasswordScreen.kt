@@ -1,4 +1,4 @@
-package com.example.lifetrack.ui.screens.authenticationScreen
+package com.example.lifetrack.ui.screens.authenticationScreens
 
 import AuthViewModel
 import android.widget.Toast
@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.lifetrack.R
-import com.example.lifetrack.data.auth.AuthRepository
 import com.example.lifetrack.ui.theme.BrightGreen
 import com.example.lifetrack.ui.theme.GreenLime
 

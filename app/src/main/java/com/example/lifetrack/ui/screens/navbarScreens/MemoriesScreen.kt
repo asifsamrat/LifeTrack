@@ -1,4 +1,4 @@
-package com.example.lifetrack.ui.screens
+package com.example.lifetrack.ui.screens.navbarScreens
 
 import android.net.Uri
 import android.view.ViewGroup

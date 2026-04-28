@@ -1,4 +1,4 @@
-package com.example.lifetrack.ui.screens
+package com.example.lifetrack.ui.screens.navbarScreens
 
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat

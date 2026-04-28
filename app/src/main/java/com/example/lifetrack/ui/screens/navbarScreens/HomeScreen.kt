@@ -1,4 +1,4 @@
-package com.example.lifetrack.ui.screens
+package com.example.lifetrack.ui.screens.navbarScreens
 
 import HomeTab
 import androidx.compose.foundation.background

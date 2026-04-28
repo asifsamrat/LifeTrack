@@ -1,4 +1,4 @@
-package com.example.lifetrack.Adding
+package com.example.lifetrack.ui.screens.editors
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
