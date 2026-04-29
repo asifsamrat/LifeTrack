@@ -1,8 +1,12 @@
+package com.example.lifetrack.viewModel
+
+import MemoryRepository
 import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.lifetrack.Uploads.MemoryFiles
 import com.example.lifetrack.data.model.Memory
+
 
 class MemoryViewModel : ViewModel() {
 

@@ -1,5 +1,5 @@
 package com.example.lifetrack.navigation
-import NoteViewModel
+import com.example.lifetrack.viewModel.NoteViewModel
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -38,4 +38,3 @@ fun HomeScreen(rootNavController: NavController) {
 //        }
     }
 }
-

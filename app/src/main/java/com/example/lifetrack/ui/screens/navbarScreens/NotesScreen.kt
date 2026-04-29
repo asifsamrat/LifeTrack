@@ -1,7 +1,5 @@
 package com.example.lifetrack.ui.screens.navbarScreens
 
-import NoteCard
-import NoteViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,8 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,10 +39,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.lifetrack.R
 import com.example.lifetrack.data.model.Note
+import com.example.lifetrack.ui.components.cards.NoteCard
 import com.example.lifetrack.ui.theme.DarkGreen
-import com.example.lifetrack.ui.theme.GreenLight
-import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.viewModel.NoteViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)

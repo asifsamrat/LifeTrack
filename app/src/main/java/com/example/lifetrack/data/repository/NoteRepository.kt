@@ -1,3 +1,5 @@
+package com.example.lifetrack.data.repository
+
 import com.example.lifetrack.data.model.Note
 import com.google.firebase.firestore.FirebaseFirestore
 

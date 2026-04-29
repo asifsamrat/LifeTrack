@@ -1,6 +1,6 @@
 package com.example.lifetrack.ui.screens.authenticationScreens
 
-import AuthViewModel
+import com.example.lifetrack.viewModel.AuthViewModel
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

@@ -24,6 +24,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.ExpandableText
 
 
 @Composable

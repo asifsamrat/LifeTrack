@@ -1,23 +1,31 @@
+package com.example.lifetrack.ui.screens.navbarScreens
+
+import ProfileInfo
+import TimeLineScreen
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.lifetrack.ui.components.TopHeader
+import com.example.lifetrack.viewModel.NotificationViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeTab() {
+fun HomeTab(navController: NavController, notificationViewModel: NotificationViewModel) {
+    val unreadCount = notificationViewModel.unreadCount
+
     Column(
         modifier = Modifier
             .fillMaxSize()
     ) {
         // Top Header Section
         TopHeader(
-//            onNotificationClick = {
-//                navController.navigate("notification")
-//            }
+            unreadCount = unreadCount,
+            onNotificationClick = {
+                navController.navigate("notification")
+            }
         )
 
         // Profile Section

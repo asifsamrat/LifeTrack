@@ -1,6 +1,6 @@
 package com.example.lifetrack.ui.screens.navbarScreens
 
-import ExpandableText
+
 import MemoriesCard
 import android.net.Uri
 import android.view.ViewGroup

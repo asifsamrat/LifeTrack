@@ -1,7 +1,9 @@
+package com.example.lifetrack.viewModel
+
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.lifetrack.data.model.Note
-
+import com.example.lifetrack.data.repository.NoteRepository
 
 class NoteViewModel : ViewModel() {
     private val noteRepository = NoteRepository()

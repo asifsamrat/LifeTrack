@@ -1,4 +1,5 @@
-import androidx.compose.foundation.layout.Arrangement
+package com.example.lifetrack.ui.components.cards
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,17 +12,15 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lifetrack.data.model.Note
 import com.example.lifetrack.ui.theme.DarkGreen
-
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.ExpandableText
 
 @Composable
 fun NoteCard(note: Note) {

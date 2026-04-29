@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lifetrack.data.model.Note
+import com.example.lifetrack.ui.components.cards.NoteCard
 import com.example.lifetrack.ui.theme.DarkGreen
 import kotlinx.coroutines.delay
 import java.util.Calendar

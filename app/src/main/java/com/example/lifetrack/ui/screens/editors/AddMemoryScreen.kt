@@ -1,6 +1,6 @@
 package com.example.lifetrack.ui.screens.editors
 
-import MemoryViewModel
+import com.example.lifetrack.viewModel.MemoryViewModel
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -305,7 +305,7 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
                 } else {
                     Text(
                         "Save Memory",
-                        fontSize = 16.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -323,56 +323,39 @@ fun MediaUploadSection(
     onRemoveClick: (Uri) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = title,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = DarkGreen,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Text(text = title, fontWeight = FontWeight.SemiBold, color = DarkGreen)
+        Spacer(modifier = Modifier.height(8.dp))
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
                 Box(
                     modifier = Modifier
                         .size(80.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color.LightGray.copy(alpha = 0.3f))
-                        .border(1.dp, DarkGreen.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
                         .clickable { onAddClick() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add", tint = DarkGreen)
+                    Icon(Icons.Default.Add, contentDescription = "Add", tint = DarkGreen)
                 }
             }
             items(uris) { uri ->
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                ) {
+                Box(modifier = Modifier.size(80.dp)) {
                     AsyncImage(
                         model = uri,
                         contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(12.dp)),
                         contentScale = ContentScale.Crop
                     )
                     IconButton(
                         onClick = { onRemoveClick(uri) },
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
                             .size(24.dp)
-                            .padding(2.dp)
-                            .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                            .align(Alignment.TopEnd)
+                            .background(Color.White, CircleShape)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Remove",
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
+                        Icon(Icons.Default.Close, contentDescription = "Remove", modifier = Modifier.size(16.dp))
                     }
                 }
             }

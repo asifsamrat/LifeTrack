@@ -1,7 +1,5 @@
 package com.example.lifetrack.navigation
-import AuthViewModel
-import MemoryViewModel
-import NoteViewModel
+
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -10,7 +8,12 @@ import androidx.navigation.navArgument
 import com.example.lifetrack.ui.screens.authenticationScreens.*
 import com.example.lifetrack.ui.screens.navbarScreens.HomeScreen
 import com.example.lifetrack.ui.screens.editors.*
+import com.example.lifetrack.viewModel.AuthViewModel
+import com.example.lifetrack.viewModel.MemoryViewModel
+import com.example.lifetrack.viewModel.NoteViewModel
 import com.example.lifetrack.viewModel.ReminderViewModel
+import com.example.lifetrack.ui.screens.NotificationScreen
+import com.example.lifetrack.viewModel.NotificationViewModel
 
 object Routes {
     const val LOGIN = "login"
@@ -26,12 +29,14 @@ object Routes {
     const val ADD_REMINDER = "add_reminder/{title}"
     const val ADD_SPECIAL_REMINDER = "add_special_reminder"
     const val ADD_EVENT_REMINDER = "add_event_reminder"
+    const val NOTIFICATION = "notification"
 }
 
 @Composable
 fun AppNavigator() {
 
     val navController = rememberNavController()
+    val notificationViewModel: NotificationViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -58,7 +63,7 @@ fun AppNavigator() {
         /* ---------------- MAIN ENTRY ---------------- */
 
         composable(Routes.HOME) {
-            HomeScreen(navController)
+            HomeScreen(navController, notificationViewModel)
         }
 
         /* ---------------- ADD SCREENS ---------------- */
@@ -97,6 +102,13 @@ fun AppNavigator() {
         composable(Routes.ADD_MEMORY) {
             val memoryViewModel: MemoryViewModel = viewModel()
             AddMemoryScreen(navController, memoryViewModel)
+        }
+
+        composable(Routes.NOTIFICATION) {
+            NotificationScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = notificationViewModel
+            )
         }
     }
 }

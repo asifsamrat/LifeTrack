@@ -1,3 +1,5 @@
+package com.example.lifetrack.viewModel
+
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.lifetrack.data.auth.AuthRepository

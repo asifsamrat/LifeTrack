@@ -1,7 +1,5 @@
 package com.example.lifetrack.ui.screens.navbarScreens
 
-import HomeTab
-import NoteViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,10 +23,12 @@ import com.example.lifetrack.navigation.BottomNavItem
 import com.example.lifetrack.ui.screens.NotificationScreen
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLight
+import com.example.lifetrack.viewModel.NoteViewModel
+import com.example.lifetrack.viewModel.NotificationViewModel
 import com.example.lifetrack.viewModel.ReminderViewModel
 
 @Composable
-fun HomeScreen(rootNavController: NavController) {
+fun HomeScreen(rootNavController: NavController, notificationViewModel: NotificationViewModel) {
     val bottomNavController = rememberNavController()
     val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -177,14 +177,15 @@ fun HomeScreen(rootNavController: NavController) {
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(BottomNavItem.Home.route) {
-                HomeTab()
+                HomeTab(navController = rootNavController, notificationViewModel = notificationViewModel)
             }
 
-//            composable("notification") {
-//                NotificationScreen(
-//                    onBack = { rootNavController.popBackStack() }
-//                )
-//            }
+            composable("notification") {
+                NotificationScreen(
+                    onBack = { rootNavController.popBackStack() },
+                    viewModel = notificationViewModel
+                )
+            }
             composable(BottomNavItem.Notes.route) {
                 val noteViewModel: NoteViewModel = viewModel()
                 NotesScreen(rootNavController, noteViewModel)
