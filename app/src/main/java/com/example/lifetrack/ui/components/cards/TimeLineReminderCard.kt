@@ -1,3 +1,5 @@
+package com.example.lifetrack.ui.components.cards
+
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -26,13 +28,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.lifetrack.data.model.Reminder
+import com.example.lifetrack.ui.components.parseDateTimeToMillis
+import com.example.lifetrack.ui.components.rememberCountdown
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
 
 @Composable
-fun ReminderCard(reminder: ReminderItem) {
-    val remainingTime by rememberCountdown(reminder.deadlineMillis)
+fun TimeLineReminderCard(reminder: Reminder) {
+    val deadlineMillis = parseDateTimeToMillis(reminder.date, reminder.time)
+    val remainingTime by rememberCountdown(deadlineMillis)
+    
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val alpha by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -79,11 +86,18 @@ fun ReminderCard(reminder: ReminderItem) {
                 }
             }
 
+            val indicatorColor = when(reminder.indicatorColor) {
+                "Red" -> Color.Red
+                "Yellow" -> Color.Yellow
+                "Blue" -> Color.Blue
+                else -> Color.Green
+            }
+
             Box(
                 modifier = Modifier
                     .size(10.dp)
                     .alpha(alpha)
-                    .background(Color.Red, CircleShape)
+                    .background(indicatorColor, CircleShape)
             )
         }
     }

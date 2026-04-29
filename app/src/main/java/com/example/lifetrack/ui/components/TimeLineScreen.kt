@@ -1,3 +1,5 @@
+package com.example.lifetrack.ui.components
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,58 +20,68 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.lifetrack.data.model.Memory
 import com.example.lifetrack.data.model.Note
-import com.example.lifetrack.ui.components.cards.NoteCard
+import com.example.lifetrack.data.model.Reminder
+import com.example.lifetrack.ui.components.cards.TimeLineMemoriesCard
+import com.example.lifetrack.ui.components.cards.TimeLineNoteCard
+import com.example.lifetrack.ui.components.cards.TimeLineReminderCard
 import com.example.lifetrack.ui.theme.DarkGreen
+import com.example.lifetrack.viewModel.MemoryViewModel
+import com.example.lifetrack.viewModel.NoteViewModel
+import com.example.lifetrack.viewModel.ReminderViewModel
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 @Composable
-fun TimeLineScreen() {
-    //Setting the custom time for showing the remaining time
-    val calendar = Calendar.getInstance()
-    val upcomingReminders = listOf(
-        ReminderItem("Meeting with Team", calendar.apply {
-            set(Calendar.HOUR_OF_DAY, 20)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-        }.timeInMillis, "Oct 27th 25"),
+fun TimeLineScreen(
+    reminderViewModel: ReminderViewModel = viewModel(),
+    memoryViewModel: MemoryViewModel = viewModel(),
+    noteViewModel: NoteViewModel = viewModel()
+) {
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-        ReminderItem("Doctor Appointment", calendar.apply {
-            set(Calendar.HOUR_OF_DAY, 14)
-            set(Calendar.MINUTE, 30)
-            set(Calendar.SECOND, 0)
-        }.timeInMillis, "Oct 28th 25"),
+    var upcomingReminders by remember { mutableStateOf<List<Reminder>>(emptyList()) }
+    var upcomingMemories by remember { mutableStateOf<List<Memory>>(emptyList()) }
+    var recentNotes by remember { mutableStateOf<List<Note>>(emptyList()) }
 
-        ReminderItem("Grocery Shopping", calendar.apply {
-            set(Calendar.HOUR_OF_DAY, 18)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-        }.timeInMillis, "Oct 29th 25")
-    )
+    LaunchedEffect(userId) {
+        if (userId.isNotEmpty()) {
+            // Fetch Reminders using the correct stored types "Event" and "Special"
+            reminderViewModel.getRemindersByType(userId, "Event") { events ->
+                reminderViewModel.getRemindersByType(userId, "Special") { specials ->
+                    upcomingReminders = (events + specials).sortedBy { it.date }.take(3)
+                }
+            }
+            
+            // Fetch Memories
+            memoryViewModel.getMemoriesByUserId(userId) { memories ->
+                upcomingMemories = memories.sortedByDescending { it.date }.take(3)
+            }
+            
+            // Fetch Notes
+            noteViewModel.getNotesByType(userId, "Daily Note") { daily ->
+                noteViewModel.getNotesByType(userId, "Special Note") { special ->
+                    recentNotes = (daily + special).sortedByDescending { it.date }.take(3)
+                }
+            }
+        }
+    }
 
-    val upcomingMemories = listOf(
-        ReminderItem("Family Picnic", 0L, "Apr 2nd 26"),
-        ReminderItem("Graduation Day", 0L, "May 15th 26"),
-        ReminderItem("First Job Anniversary", 0L, "June 10th 26")
-    )
-
-    val recentNotes = listOf(
-        Note("Daily Note", "This is the daily note", "This is the daily note This is the daily note", "Oct 27th 25"),
-        Note("Special Note", "This is the daily note", "This is the daily note This is the daily note", "Oct 27th 25"),
-        Note("Daily Note", "This is the daily note", "This is the daily note This is the daily note", "Oct 27th 25")
-    )
-
-
-
-    // Upcomming reminder and memeories
+    // Upcoming reminder and memories
     Column(
         modifier = Modifier.fillMaxWidth()
             .fillMaxHeight()
@@ -97,9 +109,10 @@ fun TimeLineScreen() {
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.padding(vertical = 12.dp)
+                .padding(horizontal = 12.dp)
         ) {
-            upcomingReminders.take(3).forEach {
-                ReminderCard(it)
+            upcomingReminders.forEach {
+                TimeLineReminderCard(it)
             }
         }
 
@@ -115,7 +128,7 @@ fun TimeLineScreen() {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "Upcoming Memories",
+                "Recent Memories",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkGreen
@@ -125,8 +138,9 @@ fun TimeLineScreen() {
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.padding(vertical = 12.dp)
+                .padding(horizontal = 12.dp)
         ) {
-            upcomingMemories.take(3).forEach {
+            upcomingMemories.forEach {
                 TimeLineMemoriesCard(it)
             }
         }
@@ -153,16 +167,14 @@ fun TimeLineScreen() {
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.padding(vertical = 12.dp)
+                .padding(horizontal = 12.dp)
         ) {
-            recentNotes.take(3).forEach {
-                NoteCard(it)
+            recentNotes.forEach {
+                TimeLineNoteCard(it)
             }
         }
     }
 }
-
-
-
 
 
 fun getRemainingTime(deadlineMillis: Long): String {
@@ -193,9 +205,14 @@ fun rememberCountdown(deadlineMillis: Long): State<String> {
     return time
 }
 
-//data class ReminderItem(val title: String, val time: String)
-data class ReminderItem(
-    val title: String,
-    val deadlineMillis: Long,
-    val date: String = ""
-)
+// Utility to convert Date/Time string to Millis for countdown
+fun parseDateTimeToMillis(date: String, time: String): Long {
+    return try {
+        // Updated to match "MMM dd, yyyy hh:mm a" (e.g. "Oct 27, 2025 08:00 PM")
+        val format = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
+        val dateTime = "$date $time"
+        format.parse(dateTime)?.time ?: 0L
+    } catch (e: Exception) {
+        0L
+    }
+}

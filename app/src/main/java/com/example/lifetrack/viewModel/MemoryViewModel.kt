@@ -1,11 +1,11 @@
 package com.example.lifetrack.viewModel
 
-import MemoryRepository
 import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.lifetrack.Uploads.MemoryFiles
 import com.example.lifetrack.data.model.Memory
+import com.example.lifetrack.data.repository.MemoryRepository
 
 
 class MemoryViewModel : ViewModel() {
@@ -57,6 +57,12 @@ class MemoryViewModel : ViewModel() {
                     message.value = if (success) "Memory Saved!" else "Failed to save"
                 }
             }
+        }
+    }
+
+    fun getMemoriesByUserId(userId: String, onResult: (List<Memory>) -> Unit) {
+        repository.getMemoriesByUserId(userId) { memories ->
+            onResult(memories)
         }
     }
 

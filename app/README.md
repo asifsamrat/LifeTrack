@@ -40,3 +40,5 @@ com.example.lifetrack
 ┣ 📂 utils
 ┃ ┣ Constants.kt
 ┃ ┗ DateUtils.kt
+
+C:\Users\HP\AppData\Local\Android\Sdk\platform-tools\adb.exe connect 192.168.0.225:33803
