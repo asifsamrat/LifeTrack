@@ -22,8 +22,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.lifetrack.navigation.BottomNavItem
+import com.example.lifetrack.ui.screens.NotificationScreen
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLight
+import com.example.lifetrack.viewModel.ReminderViewModel
 
 @Composable
 fun HomeScreen(rootNavController: NavController) {
@@ -177,12 +179,19 @@ fun HomeScreen(rootNavController: NavController) {
             composable(BottomNavItem.Home.route) {
                 HomeTab()
             }
+
+//            composable("notification") {
+//                NotificationScreen(
+//                    onBack = { rootNavController.popBackStack() }
+//                )
+//            }
             composable(BottomNavItem.Notes.route) {
                 val noteViewModel: NoteViewModel = viewModel()
                 NotesScreen(rootNavController, noteViewModel)
             }
             composable(BottomNavItem.Reminder.route) {
-                ReminderScreen()
+                val reminderViewModel: ReminderViewModel = viewModel()
+                ReminderScreen(rootNavController, reminderViewModel)
             }
             composable(BottomNavItem.Memories.route) {
                 MemoriesScreen()
@@ -190,5 +199,3 @@ fun HomeScreen(rootNavController: NavController) {
         }
     }
 }
-
-

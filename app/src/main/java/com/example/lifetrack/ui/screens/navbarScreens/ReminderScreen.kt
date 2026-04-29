@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,31 +48,29 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.lifetrack.R
+import com.example.lifetrack.data.model.Reminder
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
-
-data class EventReminder(val title: String, val date: String, val time: String, val indicatorColor: Color)
-data class SpecialDayReminder(val title: String, val date: String)
+import com.example.lifetrack.viewModel.ReminderViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReminderScreen() {
+fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel) {
     var selectedTab by remember { mutableStateOf("Event") }
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    var reminderList by remember { mutableStateOf<List<Reminder>>(emptyList()) }
 
-    val eventReminders = listOf(
-        EventReminder("Team Meeting", "Today", "12:00 pm", Color.Red),
-        EventReminder("Doctor Appointment", "Tomorrow", "09:30 am", Color.Green),
-        EventReminder("Pay Electricity Bill", "Apr 1st", "05:00 pm", Color.Yellow),
-        EventReminder("Gym Session", "Apr 2nd", "06:00 am", Color.Blue)
-    )
-
-    val specialDayReminders = listOf(
-        SpecialDayReminder("Mom's Birthday", "1st Apr 26"),
-        SpecialDayReminder("Wedding Anniversary", "15th May 26"),
-        SpecialDayReminder("Best Friend's Bday", "22nd June 26")
-    )
+    LaunchedEffect(selectedTab, userId) {
+        if (userId.isNotEmpty()) {
+            viewModel.getRemindersByType(userId, selectedTab) { reminders ->
+                reminderList = reminders
+            }
+        }
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -137,12 +136,10 @@ fun ReminderScreen() {
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                if (selectedTab == "Event") {
-                    items(eventReminders) { reminder ->
+                items(reminderList) { reminder ->
+                    if (selectedTab == "Event") {
                         EventReminderItem(reminder)
-                    }
-                } else {
-                    items(specialDayReminders) { reminder ->
+                    } else {
                         SpecialDayReminderItem(reminder)
                     }
                 }
@@ -179,7 +176,7 @@ fun ReminderTabButton(
 }
 
 @Composable
-fun EventReminderItem(reminder: EventReminder) {
+fun EventReminderItem(reminder: Reminder) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulsing")
     val alpha by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -190,6 +187,13 @@ fun EventReminderItem(reminder: EventReminder) {
         ),
         label = "alpha"
     )
+
+    val color = when(reminder.indicatorColor) {
+        "Red" -> Color.Red
+        "Yellow" -> Color.Yellow
+        "Blue" -> Color.Blue
+        else -> Color.Green
+    }
 
     Card(
         modifier = Modifier
@@ -221,15 +225,15 @@ fun EventReminderItem(reminder: EventReminder) {
             Box(
                 modifier = Modifier
                     .size(16.dp)
-                    .then(if (reminder.indicatorColor == Color.Red) Modifier.alpha(alpha) else Modifier)
-                    .background(color = reminder.indicatorColor, shape = CircleShape)
+                    .then(if (reminder.indicatorColor == "Red") Modifier.alpha(alpha) else Modifier)
+                    .background(color = color, shape = CircleShape)
             )
         }
     }
 }
 
 @Composable
-fun SpecialDayReminderItem(reminder: SpecialDayReminder) {
+fun SpecialDayReminderItem(reminder: Reminder) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

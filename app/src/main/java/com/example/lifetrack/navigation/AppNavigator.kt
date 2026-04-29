@@ -1,5 +1,6 @@
 package com.example.lifetrack.navigation
 import AuthViewModel
+import MemoryViewModel
 import NoteViewModel
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -9,6 +10,7 @@ import androidx.navigation.navArgument
 import com.example.lifetrack.ui.screens.authenticationScreens.*
 import com.example.lifetrack.ui.screens.navbarScreens.HomeScreen
 import com.example.lifetrack.ui.screens.editors.*
+import com.example.lifetrack.viewModel.ReminderViewModel
 
 object Routes {
     const val LOGIN = "login"
@@ -78,20 +80,23 @@ fun AppNavigator() {
             })
         ) { backStackEntry ->
             val title = backStackEntry.arguments?.getString("title") ?: ""
-            AddReminderScreen(title)
+            val reminderViewModel: ReminderViewModel = viewModel()
+            AddReminderScreen(title, navController, reminderViewModel)
         }
 
         composable(Routes.ADD_SPECIAL_REMINDER) {
-            AddReminderScreen("Special Day Reminder")
+            val reminderViewModel: ReminderViewModel = viewModel()
+            AddReminderScreen("Special Day Reminder", navController, reminderViewModel)
         }
 
         composable(Routes.ADD_EVENT_REMINDER) {
-            AddReminderScreen("Event Reminder")
+            val reminderViewModel: ReminderViewModel = viewModel()
+            AddReminderScreen("Event Reminder", navController, reminderViewModel)
         }
 
-//        composable(Routes.ADD_MEMORY) {
-//            val memoryViewModel: MemoryViewModel = viewModel()
-//            AddMemoryScreen(navController, memoryViewModel)
-//        }
+        composable(Routes.ADD_MEMORY) {
+            val memoryViewModel: MemoryViewModel = viewModel()
+            AddMemoryScreen(navController, memoryViewModel)
+        }
     }
 }

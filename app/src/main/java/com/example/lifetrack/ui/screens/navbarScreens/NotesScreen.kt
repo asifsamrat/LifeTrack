@@ -1,5 +1,6 @@
 package com.example.lifetrack.ui.screens.navbarScreens
 
+import NoteCard
 import NoteViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -129,7 +130,7 @@ fun NotesScreen(rootNavController: NavController, noteViewModel: NoteViewModel) 
                     .padding(horizontal = 16.dp)
             ) {
                 items(noteList) { note ->
-                    NoteItem(note)
+                    NoteCard(note)
                 }
             }
         }
@@ -160,43 +161,5 @@ fun TabButton(
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             fontSize = 14.sp
         )
-    }
-}
-
-@Composable
-fun NoteItem(note: Note) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = white
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-        ) {
-            Text(
-                text = note.title,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = DarkGreen
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = note.description,
-                fontSize = 14.sp,
-                color = GreenLime
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = note.date,
-                fontSize = 12.sp,
-                color = GreenLight,
-                fontWeight = FontWeight.Medium
-            )
-        }
     }
 }
