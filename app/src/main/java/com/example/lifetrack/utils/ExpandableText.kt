@@ -29,7 +29,6 @@ fun ExpandableText(
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-//            fontWeight = FontWeight.SemiBold,
             lineHeight = 17.sp,
             maxLines = if (expanded) Int.MAX_VALUE else collapsedMaxLines,
             overflow = TextOverflow.Ellipsis,

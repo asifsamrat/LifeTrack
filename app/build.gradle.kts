@@ -56,6 +56,9 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
 
+    // Cloudinary
+    implementation("com.cloudinary:cloudinary-android:3.1.2")
+
     // Coil
     implementation(libs.coil.compose)
 
@@ -70,6 +73,7 @@ dependencies {
     implementation(libs.androidx.foundation)
     implementation(libs.runtime)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.play.services.cast.tv)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
