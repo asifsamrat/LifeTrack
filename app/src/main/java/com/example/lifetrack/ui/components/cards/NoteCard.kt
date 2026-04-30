@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.example.lifetrack.data.model.Note
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.utils.ExpandableText
 
 @Composable
@@ -42,7 +43,7 @@ fun NoteCard(note: Note) {
                 modifier = Modifier.offset(y = (-12).dp)
             ) {
                 Text(
-                    text = note.date,
+                    text = DateTimeUtils.formatForDisplay(note.date),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.fillMaxWidth()

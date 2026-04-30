@@ -26,6 +26,7 @@ import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLight
 import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.DateTimeUtils
 
 @Composable
 fun TimeLineMemoriesCard(memory: Memory) {
@@ -49,12 +50,15 @@ fun TimeLineMemoriesCard(memory: Memory) {
                     color = DarkGreen
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+                
+                // Use standardized display format
                 Text(
-                    text = "Date: ${memory.date}",
+                    text = "Date: ${DateTimeUtils.formatForDisplay(memory.date)}",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = GreenLime
                 )
+
                 Text(
                     text = "A beautiful memory captured",
                     fontSize = 11.sp,

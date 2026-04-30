@@ -29,15 +29,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lifetrack.data.model.Reminder
-import com.example.lifetrack.ui.components.parseDateTimeToMillis
 import com.example.lifetrack.ui.components.rememberCountdown
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.DateTimeUtils
 
 @Composable
 fun TimeLineReminderCard(reminder: Reminder) {
-    val deadlineMillis = parseDateTimeToMillis(reminder.date, reminder.time)
+    // Using standardized parsing
+    val deadlineMillis = DateTimeUtils.parseToMillis(reminder.date, reminder.time)
     val remainingTime by rememberCountdown(deadlineMillis)
     
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -71,6 +72,16 @@ fun TimeLineReminderCard(reminder: Reminder) {
                     color = DarkGreen
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+                
+                // Display formatted date and time
+                Text(
+                    text = "${DateTimeUtils.formatForDisplay(reminder.date)} • ${DateTimeUtils.formatTimeForDisplay(reminder.time)}",
+                    fontSize = 11.sp,
+                    color = Color.Gray
+                )
+                
+                Spacer(modifier = Modifier.height(2.dp))
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "Remaining: ",

@@ -37,14 +37,12 @@ import com.example.lifetrack.ui.components.cards.TimeLineMemoriesCard
 import com.example.lifetrack.ui.components.cards.TimeLineNoteCard
 import com.example.lifetrack.ui.components.cards.TimeLineReminderCard
 import com.example.lifetrack.ui.theme.DarkGreen
+import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.viewModel.MemoryViewModel
 import com.example.lifetrack.viewModel.NoteViewModel
 import com.example.lifetrack.viewModel.ReminderViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 @Composable
 fun TimeLineScreen(
@@ -60,10 +58,10 @@ fun TimeLineScreen(
 
     LaunchedEffect(userId) {
         if (userId.isNotEmpty()) {
-            // Fetch Reminders using the correct stored types "Event" and "Special"
+            // Fetch Reminders
             reminderViewModel.getRemindersByType(userId, "Event") { events ->
                 reminderViewModel.getRemindersByType(userId, "Special") { specials ->
-                    upcomingReminders = (events + specials).sortedBy { it.date }.take(3)
+                    upcomingReminders = (events + specials).sortedBy { it.date }
                 }
             }
             
@@ -81,7 +79,6 @@ fun TimeLineScreen(
         }
     }
 
-    // Upcoming reminder and memories
     Column(
         modifier = Modifier.fillMaxWidth()
             .fillMaxHeight()
@@ -89,97 +86,53 @@ fun TimeLineScreen(
             .verticalScroll(rememberScrollState())
             .padding(8.dp)
     ) {
+        // Reminders Section
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "Reminder",
-                tint = DarkGreen,
-                modifier = Modifier.size(20.dp)
-            )
+            Icon(Icons.Default.Notifications, null, tint = DarkGreen, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                "Upcoming Reminders",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = DarkGreen
-            )
-        }
-
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.padding(vertical = 12.dp)
-                .padding(horizontal = 12.dp)
-        ) {
-            upcomingReminders.forEach {
-                TimeLineReminderCard(it)
-            }
-        }
-
-        Row(
-            modifier = Modifier.padding(top = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.PhotoLibrary,
-                contentDescription = "Memories",
-                tint = DarkGreen,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                "Recent Memories",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = DarkGreen
-            )
+            Text("Upcoming Reminders", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkGreen)
         }
 
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.padding(vertical = 12.dp)
-                .padding(horizontal = 12.dp)
+            modifier = Modifier.padding(vertical = 12.dp).padding(horizontal = 12.dp)
         ) {
-            upcomingMemories.forEach {
-                TimeLineMemoriesCard(it)
-            }
+            upcomingReminders.forEach { TimeLineReminderCard(it) }
         }
 
-        Row(
-            modifier = Modifier.padding(top = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Edit,
-                contentDescription = "Note",
-                tint = DarkGreen,
-                modifier = Modifier.size(20.dp)
-            )
+        // Memories Section
+        Row(modifier = Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.PhotoLibrary, null, tint = DarkGreen, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                "Recent Notes",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = DarkGreen
-            )
+            Text("Recent Memories", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkGreen)
         }
 
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.padding(vertical = 12.dp)
-                .padding(horizontal = 12.dp)
+            modifier = Modifier.padding(vertical = 12.dp).padding(horizontal = 12.dp)
         ) {
-            recentNotes.forEach {
-                TimeLineNoteCard(it)
-            }
+            upcomingMemories.forEach { TimeLineMemoriesCard(it) }
+        }
+
+        // Notes Section
+        Row(modifier = Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Edit, null, tint = DarkGreen, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Recent Notes", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkGreen)
+        }
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.padding(vertical = 12.dp).padding(horizontal = 12.dp)
+        ) {
+            recentNotes.forEach { TimeLineNoteCard(it) }
         }
     }
 }
 
-
 fun getRemainingTime(deadlineMillis: Long): String {
     val currentMillis = System.currentTimeMillis()
-    var diff = deadlineMillis - currentMillis
+    val diff = deadlineMillis - currentMillis
 
     if (diff <= 0) return "Time's up"
 
@@ -203,16 +156,4 @@ fun rememberCountdown(deadlineMillis: Long): State<String> {
     }
 
     return time
-}
-
-// Utility to convert Date/Time string to Millis for countdown
-fun parseDateTimeToMillis(date: String, time: String): Long {
-    return try {
-        // Updated to match "MMM dd, yyyy hh:mm a" (e.g. "Oct 27, 2025 08:00 PM")
-        val format = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
-        val dateTime = "$date $time"
-        format.parse(dateTime)?.time ?: 0L
-    } catch (e: Exception) {
-        0L
-    }
 }

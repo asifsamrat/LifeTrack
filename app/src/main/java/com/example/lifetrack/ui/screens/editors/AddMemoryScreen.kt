@@ -5,7 +5,6 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,11 +38,8 @@ import com.example.lifetrack.R
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.DateTimeUtils
 import com.google.firebase.auth.FirebaseAuth
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,8 +47,8 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
 
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf("") }
-    var time by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") } // Standard: yyyy-MM-dd
+    var time by remember { mutableStateOf("") } // Standard: HH:mm
     
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var selectedVideos by remember { mutableStateOf<List<Uri>>(emptyList()) }
@@ -74,7 +70,6 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
         selectedVideos = (selectedVideos + uris).distinct()
     }
 
-    // React to ViewModel state changes
     LaunchedEffect(viewModel.isSuccess.value) {
         if (viewModel.isSuccess.value) {
             Toast.makeText(context, viewModel.message.value, Toast.LENGTH_SHORT).show()
@@ -83,14 +78,6 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
         }
     }
 
-    LaunchedEffect(viewModel.message.value) {
-        if (viewModel.message.value.isNotEmpty() && !viewModel.isSuccess.value) {
-            Toast.makeText(context, viewModel.message.value, Toast.LENGTH_SHORT).show()
-            viewModel.resetState()
-        }
-    }
-
-    // Date Picker Dialog
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -98,7 +85,7 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
                 TextButton(onClick = {
                     val selectedDate = datePickerState.selectedDateMillis
                     if (selectedDate != null) {
-                        date = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(selectedDate))
+                        date = DateTimeUtils.getStorageDate(selectedDate)
                     }
                     showDatePicker = false
                 }) {
@@ -115,16 +102,12 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
         }
     }
 
-    // Time Picker Dialog
     if (showTimePicker) {
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    val calendar = Calendar.getInstance()
-                    calendar.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
-                    calendar.set(Calendar.MINUTE, timePickerState.minute)
-                    time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(calendar.time)
+                    time = DateTimeUtils.getStorageTime(timePickerState.hour, timePickerState.minute)
                     showTimePicker = false
                 }) {
                     Text("OK", color = DarkGreen)
@@ -145,27 +128,17 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
         topBar = {
             TopAppBar(
                 title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        androidx.compose.foundation.Image(
                             painter = painterResource(id = R.drawable.life_track_logo_transperant),
                             contentDescription = "Logo",
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(shape = RoundedCornerShape(15.dp))
+                            modifier = Modifier.size(60.dp).clip(shape = RoundedCornerShape(15.dp))
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Add Memory",
-                            fontWeight = FontWeight.Bold,
-                            color = DarkGreen
-                        )
+                        Text(text = "Add Memory", fontWeight = FontWeight.Bold, color = DarkGreen)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = white
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = white)
             )
         }
     ) { paddingValues ->
@@ -191,11 +164,7 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
                 onValueChange = { title = it },
                 label = { Text("Title") },
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = DarkGreen,
-                    focusedLabelColor = DarkGreen,
-                    cursorColor = DarkGreen
-                ),
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = DarkGreen, focusedLabelColor = DarkGreen),
                 shape = RoundedCornerShape(12.dp)
             )
 
@@ -203,8 +172,8 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
-                    value = date,
-                    onValueChange = { date = it },
+                    value = if (date.isNotEmpty()) DateTimeUtils.formatForDisplay(date) else "",
+                    onValueChange = { },
                     label = { Text("Date") },
                     modifier = Modifier.weight(1f).clickable { showDatePicker = true },
                     trailingIcon = {
@@ -213,16 +182,12 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
                         }
                     },
                     readOnly = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = DarkGreen,
-                        focusedLabelColor = DarkGreen,
-                        cursorColor = DarkGreen
-                    ),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = DarkGreen, focusedLabelColor = DarkGreen),
                     shape = RoundedCornerShape(12.dp)
                 )
                 OutlinedTextField(
-                    value = time,
-                    onValueChange = { time = it },
+                    value = if (time.isNotEmpty()) DateTimeUtils.formatTimeForDisplay(time) else "",
+                    onValueChange = { },
                     label = { Text("Time") },
                     modifier = Modifier.weight(1f).clickable { showTimePicker = true },
                     trailingIcon = {
@@ -231,11 +196,7 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
                         }
                     },
                     readOnly = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = DarkGreen,
-                        focusedLabelColor = DarkGreen,
-                        cursorColor = DarkGreen
-                    ),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = DarkGreen, focusedLabelColor = DarkGreen),
                     shape = RoundedCornerShape(12.dp)
                 )
             }
@@ -246,20 +207,13 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = DarkGreen,
-                    focusedLabelColor = DarkGreen,
-                    cursorColor = DarkGreen
-                ),
+                modifier = Modifier.fillMaxWidth().height(120.dp),
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = DarkGreen, focusedLabelColor = DarkGreen),
                 shape = RoundedCornerShape(12.dp)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Image Upload Section
             MediaUploadSection(
                 title = "Capture Images",
                 uris = selectedImages,
@@ -269,7 +223,6 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Video Upload Section
             MediaUploadSection(
                 title = "Capture Videos",
                 uris = selectedVideos,
@@ -281,34 +234,29 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
 
             Button(
                 onClick = {
-                    viewModel.saveMemory(
-                        title = title,
-                        description = description,
-                        date = date,
-                        time = time,
-                        images = selectedImages,
-                        videos = selectedVideos,
-                        userId = userId
-                    )
+                    if (title.isNotEmpty() && date.isNotEmpty() && time.isNotEmpty() && userId.isNotEmpty()) {
+                        viewModel.saveMemory(
+                            title = title,
+                            description = description,
+                            date = date,
+                            time = time,
+                            images = selectedImages,
+                            videos = selectedVideos,
+                            userId = userId
+                        )
+                    } else {
+                        Toast.makeText(context, "Title, Date and Time are required", Toast.LENGTH_SHORT).show()
+                    }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = DarkGreen
-                ),
+                colors = ButtonDefaults.buttonColors(containerColor = DarkGreen),
                 enabled = !viewModel.isSaving.value
             ) {
                 if (viewModel.isSaving.value) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                 } else {
-                    Text(
-                        "Save Memory",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    Text("Save Memory", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }
@@ -328,11 +276,7 @@ fun MediaUploadSection(
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
                 Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
-                        .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
-                        .clickable { onAddClick() },
+                    modifier = Modifier.size(80.dp).background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp)).border(1.dp, Color.LightGray, RoundedCornerShape(12.dp)).clickable { onAddClick() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Add", tint = DarkGreen)
@@ -343,17 +287,12 @@ fun MediaUploadSection(
                     AsyncImage(
                         model = uri,
                         contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(12.dp)),
+                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(12.dp)),
                         contentScale = ContentScale.Crop
                     )
                     IconButton(
                         onClick = { onRemoveClick(uri) },
-                        modifier = Modifier
-                            .size(24.dp)
-                            .align(Alignment.TopEnd)
-                            .background(Color.White, CircleShape)
+                        modifier = Modifier.size(24.dp).align(Alignment.TopEnd).background(Color.White, CircleShape)
                     ) {
                         Icon(Icons.Default.Close, contentDescription = "Remove", modifier = Modifier.size(16.dp))
                     }

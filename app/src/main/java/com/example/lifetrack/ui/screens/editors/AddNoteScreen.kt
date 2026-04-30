@@ -25,11 +25,9 @@ import com.example.lifetrack.data.model.Note
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.viewModel.NoteViewModel
 import com.google.firebase.auth.FirebaseAuth
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +39,7 @@ fun AddNoteScreen(
 
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") } // Stores yyyy-MM-dd
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     //Note save message and success
@@ -60,7 +58,7 @@ fun AddNoteScreen(
                 TextButton(onClick = {
                     val selectedDate = datePickerState.selectedDateMillis
                     if (selectedDate != null) {
-                        date = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(selectedDate))
+                        date = DateTimeUtils.getStorageDate(selectedDate)
                     }
                     showDatePicker = false
                 }) {
@@ -137,8 +135,8 @@ fun AddNoteScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = date,
-                onValueChange = { date = it },
+                value = if (date.isNotEmpty()) DateTimeUtils.formatForDisplay(date) else "",
+                onValueChange = { },
                 label = { Text("Date") },
                 placeholder = { Text("Select Date") },
                 modifier = Modifier
