@@ -42,6 +42,7 @@ import com.example.lifetrack.data.model.Note
 import com.example.lifetrack.ui.components.cards.NoteCard
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.viewModel.NoteViewModel
 import com.google.firebase.auth.FirebaseAuth
 
@@ -56,7 +57,8 @@ fun NotesScreen(rootNavController: NavController, noteViewModel: NoteViewModel) 
     LaunchedEffect(selectedTab, userId) {
         if (userId.isNotEmpty()) {
             noteViewModel.getNotesByType(userId, selectedTab) { notes ->
-                noteList = notes
+                // Sorting notes by date (newest first)
+                noteList = notes.sortedByDescending { DateTimeUtils.parseToMillis(it.date) }
             }
         }
     }
@@ -125,8 +127,19 @@ fun NotesScreen(rootNavController: NavController, noteViewModel: NoteViewModel) 
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                items(noteList) { note ->
-                    NoteCard(note)
+                if (noteList.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "No notes found", color = Color.Gray)
+                        }
+                    }
+                } else {
+                    items(noteList) { note ->
+                        NoteCard(note)
+                    }
                 }
             }
         }

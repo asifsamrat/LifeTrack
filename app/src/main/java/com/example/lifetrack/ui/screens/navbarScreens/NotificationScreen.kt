@@ -27,10 +27,9 @@ import androidx.compose.ui.unit.sp
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.viewModel.NotificationViewModel
-import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 // ---------------------------
 // 🔹 Data Model
@@ -52,11 +51,11 @@ fun NotificationScreen(
     onBack: () -> Unit,
     viewModel: NotificationViewModel
 ) {
-    val allItems = viewModel.notifications
-    val expiredItems = getRecentlyExpiredNotifications(allItems)
+    val expiredItems = viewModel.notifications
 
-    // Mark all as read when screen is opened
+    // Refresh and Mark all as read when screen is opened
     LaunchedEffect(Unit) {
+        viewModel.startListening()
         viewModel.markAllAsRead()
     }
 
@@ -84,7 +83,7 @@ fun NotificationScreen(
                 )
             )
         },
-        containerColor = Color(0xFFF7F7F7) // Light gray background for contrast
+        containerColor = Color(0xFFF7F7F7)
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -95,7 +94,7 @@ fun NotificationScreen(
                 EmptyState()
             } else {
                 Text(
-                    text = "Recently Expired (Last 5 Days)",
+                    text = "Expired Reminders & Memories",
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
@@ -113,6 +112,7 @@ fun NotificationScreen(
         }
     }
 }
+
 
 // ---------------------------
 // 🔹 Notification Item UI
@@ -154,7 +154,6 @@ fun NotificationItemUI(item: NotificationItem) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -172,7 +171,6 @@ fun NotificationItemUI(item: NotificationItem) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Text Content
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -210,8 +208,13 @@ fun NotificationItemUI(item: NotificationItem) {
                         color = Color.Gray,
                         fontSize = 12.sp
                     )
+                    
+                    // FIXED: Now showing the actual date and time stored in the timestamp
+                    val dateStr = DateTimeUtils.getStorageDate(item.timestamp)
+                    val timeStr = java.text.SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(item.timestamp))
+                    
                     Text(
-                        text = formatDate(item.timestamp),
+                        text = "${DateTimeUtils.formatForDisplay(dateStr)} at ${DateTimeUtils.formatTimeForDisplay(timeStr)}",
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
@@ -221,9 +224,6 @@ fun NotificationItemUI(item: NotificationItem) {
     }
 }
 
-// ---------------------------
-// 🔹 Empty State
-// ---------------------------
 @Composable
 fun EmptyState() {
     Column(
@@ -256,32 +256,10 @@ fun EmptyState() {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "You're all caught up! There are no expired reminders or events from the last 5 days.",
+            text = "You're all caught up! There are no expired reminders or memories.",
             fontSize = 14.sp,
             color = Color.Gray,
             textAlign = TextAlign.Center
         )
     }
-}
-
-// ---------------------------
-// 🔹 Filter Logic
-// ---------------------------
-fun getRecentlyExpiredNotifications(
-    items: List<NotificationItem>
-): List<NotificationItem> {
-    val now = System.currentTimeMillis()
-    val fiveDaysAgo = now - TimeUnit.DAYS.toMillis(5)
-
-    return items
-        .filter { it.timestamp in fiveDaysAgo until now }
-        .sortedByDescending { it.timestamp }
-}
-
-// ---------------------------
-// 🔹 Date Formatter
-// ---------------------------
-fun formatDate(timestamp: Long): String {
-    val sdf = SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault())
-    return sdf.format(Date(timestamp))
 }

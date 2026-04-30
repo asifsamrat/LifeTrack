@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -34,17 +36,24 @@ import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddReminderScreen(initialTitle: String = "", navController: NavController, viewModel: ReminderViewModel) {
-
-    var title by remember { mutableStateOf(initialTitle) }
-    var description by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf("") } // yyyy-MM-dd
-    var time by remember { mutableStateOf("") } // HH:mm
-    var reminderType by remember { mutableStateOf(if (initialTitle.contains("Special")) "Special" else "Event") }
-    var indicatorColor by remember { mutableStateOf("Green") }
+fun AddReminderScreen(
+    initialReminderType: String,
+    navController: NavController,
+    viewModel: ReminderViewModel
+) {
+    var title by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") } // Stores yyyy-MM-dd
+    var time by remember { mutableStateOf("") } // Stores HH:mm
+    
+    var remindDays by remember { mutableStateOf("0") }
+    var remindHours by remember { mutableStateOf("0") }
+    var remindMinutes by remember { mutableStateOf("0") }
 
     val context = LocalContext.current
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+    val message by viewModel.message
+    val success by viewModel.isSuccess
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
@@ -52,15 +61,13 @@ fun AddReminderScreen(initialTitle: String = "", navController: NavController, v
     var showTimePicker by remember { mutableStateOf(false) }
     val timePickerState = rememberTimePickerState()
 
-    var typeExpanded by remember { mutableStateOf(false) }
-    var colorExpanded by remember { mutableStateOf(false) }
+    // Determine the type for display and storage
+    val displayType = if (initialReminderType.contains("Special")) "Special Day" else "Event"
+    val storedReminderType = if (initialReminderType.contains("Special")) "Special" else "Event"
 
-    val types = listOf("Event", "Special")
-    val colors = listOf("Red", "Green", "Yellow", "Blue")
-
-    LaunchedEffect(viewModel.isSuccess.value) {
-        if (viewModel.isSuccess.value) {
-            Toast.makeText(context, viewModel.message.value, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(success) {
+        if (success) {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             viewModel.resetState()
             navController.popBackStack()
         }
@@ -123,7 +130,7 @@ fun AddReminderScreen(initialTitle: String = "", navController: NavController, v
                             modifier = Modifier.size(60.dp).clip(shape = RoundedCornerShape(15.dp))
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Add Reminder", fontWeight = FontWeight.Bold, color = DarkGreen)
+                        Text(text = "Add New $displayType", fontWeight = FontWeight.Bold, color = DarkGreen)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = white)
@@ -141,47 +148,29 @@ fun AddReminderScreen(initialTitle: String = "", navController: NavController, v
         ) {
 
             Text(
-                text = "Set a new reminder for your events",
+                text = "Set your reminder details",
                 fontSize = 14.sp,
                 color = GreenLime,
                 modifier = Modifier.align(Alignment.Start).padding(bottom = 20.dp)
             )
 
-            ExposedDropdownMenuBox(
-                expanded = typeExpanded,
-                onExpandedChange = { typeExpanded = !typeExpanded },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = reminderType,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Reminder Type") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = DarkGreen, focusedLabelColor = DarkGreen)
-                )
-                ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
-                    types.forEach { type ->
-                        DropdownMenuItem(text = { Text(type) }, onClick = { reminderType = type; typeExpanded = false })
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+            // Title Field
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("Title") },
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = DarkGreen, focusedLabelColor = DarkGreen, cursorColor = DarkGreen),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = DarkGreen,
+                    focusedLabelColor = DarkGreen,
+                    cursorColor = DarkGreen
+                ),
                 shape = RoundedCornerShape(12.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Date Selection Field
             OutlinedTextField(
                 value = if (date.isNotEmpty()) DateTimeUtils.formatForDisplay(date) else "",
                 onValueChange = { },
@@ -200,6 +189,7 @@ fun AddReminderScreen(initialTitle: String = "", navController: NavController, v
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Time Selection Field
             OutlinedTextField(
                 value = if (time.isNotEmpty()) DateTimeUtils.formatTimeForDisplay(time) else "",
                 onValueChange = { },
@@ -216,43 +206,66 @@ fun AddReminderScreen(initialTitle: String = "", navController: NavController, v
                 shape = RoundedCornerShape(12.dp)
             )
 
-            if (reminderType == "Event") {
-                Spacer(modifier = Modifier.height(16.dp))
-                ExposedDropdownMenuBox(
-                    expanded = colorExpanded,
-                    onExpandedChange = { colorExpanded = !colorExpanded },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedTextField(
-                        value = indicatorColor,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Indicator Color") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colorExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = DarkGreen, focusedLabelColor = DarkGreen)
-                    )
-                    ExposedDropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
-                        colors.forEach { color ->
-                            DropdownMenuItem(text = { Text(color) }, onClick = { indicatorColor = color; colorExpanded = false })
-                        }
-                    }
-                }
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Remind Me Before Section
+            Text(
+                text = "Remind me before",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = DarkGreen,
+                modifier = Modifier.align(Alignment.Start).padding(bottom = 8.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = remindDays,
+                    onValueChange = { if (it.all { char -> char.isDigit() }) remindDays = it },
+                    label = { Text("Days") },
+                    modifier = Modifier.weight(1f),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = DarkGreen, focusedLabelColor = DarkGreen),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                OutlinedTextField(
+                    value = remindHours,
+                    onValueChange = { if (it.all { char -> char.isDigit() }) remindHours = it },
+                    label = { Text("Hours") },
+                    modifier = Modifier.weight(1f),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = DarkGreen, focusedLabelColor = DarkGreen),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                OutlinedTextField(
+                    value = remindMinutes,
+                    onValueChange = { if (it.all { char -> char.isDigit() }) remindMinutes = it },
+                    label = { Text("Mins") },
+                    modifier = Modifier.weight(1f),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = DarkGreen, focusedLabelColor = DarkGreen),
+                    shape = RoundedCornerShape(12.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
+            // Save Button
             Button(
                 onClick = {
-                    if (title.isNotEmpty() && date.isNotEmpty() && userId.isNotEmpty()) {
+                    if (title.isNotEmpty() && date.isNotEmpty() && time.isNotEmpty() && userId.isNotEmpty()) {
                         val reminder = Reminder(
-                            reminderType = reminderType,
+                            reminderType = storedReminderType,
                             title = title,
                             date = date,
                             time = time,
                             userId = userId,
-                            indicatorColor = indicatorColor
+                            remindDays = remindDays.toIntOrNull() ?: 0,
+                            remindHours = remindHours.toIntOrNull() ?: 0,
+                            remindMinutes = remindMinutes.toIntOrNull() ?: 0,
+                            indicatorColor = "Green"
                         )
                         viewModel.saveReminder(reminder)
                     } else {

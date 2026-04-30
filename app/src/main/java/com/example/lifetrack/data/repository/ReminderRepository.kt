@@ -32,4 +32,17 @@ class ReminderRepository {
                 onResult(emptyList())
             }
     }
+
+    fun getRemindersByUserId(userId: String, onResult: (List<Reminder>) -> Unit) {
+        reminderCollection
+            .whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { result ->
+                val reminders = result.toObjects(Reminder::class.java)
+                onResult(reminders)
+            }
+            .addOnFailureListener {
+                onResult(emptyList())
+            }
+    }
 }

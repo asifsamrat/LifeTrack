@@ -54,6 +54,7 @@ import com.example.lifetrack.data.model.Reminder
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.viewModel.ReminderViewModel
 import com.google.firebase.auth.FirebaseAuth
 
@@ -67,7 +68,15 @@ fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel) {
     LaunchedEffect(selectedTab, userId) {
         if (userId.isNotEmpty()) {
             viewModel.getRemindersByType(userId, selectedTab) { reminders ->
+                val now = System.currentTimeMillis()
                 reminderList = reminders
+                    .filter { reminder ->
+                        val timestamp = DateTimeUtils.parseToMillis(reminder.date, reminder.time)
+                        timestamp >= now // Only non-expired
+                    }
+                    .sortedBy { reminder ->
+                        DateTimeUtils.parseToMillis(reminder.date, reminder.time) // Sorted order
+                    }
             }
         }
     }
@@ -217,10 +226,19 @@ fun EventReminderItem(reminder: Reminder) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${reminder.date} at ${reminder.time}",
+                    text = "${DateTimeUtils.formatForDisplay(reminder.date)} at ${DateTimeUtils.formatTimeForDisplay(reminder.time)}",
                     fontSize = 14.sp,
                     color = GreenLime
                 )
+                
+                if (reminder.remindDays > 0 || reminder.remindHours > 0 || reminder.remindMinutes > 0) {
+                    Text(
+                        text = "Remind me: ${reminder.remindDays}d ${reminder.remindHours}h ${reminder.remindMinutes}m before",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
             }
             Box(
                 modifier = Modifier
@@ -256,10 +274,19 @@ fun SpecialDayReminderItem(reminder: Reminder) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = reminder.date,
+                    text = DateTimeUtils.formatForDisplay(reminder.date),
                     fontSize = 14.sp,
                     color = GreenLime
                 )
+                
+                if (reminder.remindDays > 0 || reminder.remindHours > 0 || reminder.remindMinutes > 0) {
+                    Text(
+                        text = "Remind me: ${reminder.remindDays}d ${reminder.remindHours}h ${reminder.remindMinutes}m before",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
             }
             Icon(
                 imageVector = Icons.Default.Cake,

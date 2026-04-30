@@ -58,22 +58,31 @@ fun TimeLineScreen(
 
     LaunchedEffect(userId) {
         if (userId.isNotEmpty()) {
-            // Fetch Reminders
+            val now = System.currentTimeMillis()
+            
+            // Fetch Reminders: Filter non-expired and sort ascending
             reminderViewModel.getRemindersByType(userId, "Event") { events ->
                 reminderViewModel.getRemindersByType(userId, "Special") { specials ->
-                    upcomingReminders = (events + specials).sortedBy { it.date }
+                    upcomingReminders = (events + specials)
+                        .filter { DateTimeUtils.parseToMillis(it.date, it.time) >= now }
+                        .sortedBy { DateTimeUtils.parseToMillis(it.date, it.time) }
                 }
             }
             
-            // Fetch Memories
+            // Fetch Memories: Filter non-expired and sort ascending
             memoryViewModel.getMemoriesByUserId(userId) { memories ->
-                upcomingMemories = memories.sortedByDescending { it.date }.take(3)
+                upcomingMemories = memories
+                    .filter { DateTimeUtils.parseToMillis(it.date, it.time) >= now }
+                    .sortedBy { DateTimeUtils.parseToMillis(it.date, it.time) }
+                    .take(3)
             }
             
-            // Fetch Notes
+            // Fetch Notes: Sorted by date descending
             noteViewModel.getNotesByType(userId, "Daily Note") { daily ->
                 noteViewModel.getNotesByType(userId, "Special Note") { special ->
-                    recentNotes = (daily + special).sortedByDescending { it.date }.take(3)
+                    recentNotes = (daily + special)
+                        .sortedByDescending { DateTimeUtils.parseToMillis(it.date) }
+                        .take(3)
                 }
             }
         }
@@ -97,21 +106,29 @@ fun TimeLineScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.padding(vertical = 12.dp).padding(horizontal = 12.dp)
         ) {
-            upcomingReminders.forEach { TimeLineReminderCard(it) }
+            if (upcomingReminders.isEmpty()) {
+                Text("No upcoming reminders", fontSize = 14.sp, color = androidx.compose.ui.graphics.Color.Gray)
+            } else {
+                upcomingReminders.forEach { TimeLineReminderCard(it) }
+            }
         }
 
         // Memories Section
         Row(modifier = Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Default.PhotoLibrary, null, tint = DarkGreen, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Recent Memories", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkGreen)
+            Text("Upcoming Memories", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkGreen)
         }
 
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.padding(vertical = 12.dp).padding(horizontal = 12.dp)
         ) {
-            upcomingMemories.forEach { TimeLineMemoriesCard(it) }
+            if (upcomingMemories.isEmpty()) {
+                Text("No upcoming memories", fontSize = 14.sp, color = androidx.compose.ui.graphics.Color.Gray)
+            } else {
+                upcomingMemories.forEach { TimeLineMemoriesCard(it) }
+            }
         }
 
         // Notes Section
@@ -125,7 +142,11 @@ fun TimeLineScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.padding(vertical = 12.dp).padding(horizontal = 12.dp)
         ) {
-            recentNotes.forEach { TimeLineNoteCard(it) }
+            if (recentNotes.isEmpty()) {
+                Text("No recent notes", fontSize = 14.sp, color = androidx.compose.ui.graphics.Color.Gray)
+            } else {
+                recentNotes.forEach { TimeLineNoteCard(it) }
+            }
         }
     }
 }

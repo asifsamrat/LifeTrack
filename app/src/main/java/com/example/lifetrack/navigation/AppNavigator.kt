@@ -27,8 +27,6 @@ object Routes {
     const val ADD_MEMORY = "add_memory"
 
     const val ADD_REMINDER = "add_reminder/{title}"
-    const val ADD_SPECIAL_REMINDER = "add_special_reminder"
-    const val ADD_EVENT_REMINDER = "add_event_reminder"
     const val NOTIFICATION = "notification"
 }
 
@@ -50,17 +48,7 @@ fun AppNavigator() {
             LoginScreen(navController, authViewModel)
         }
 
-        composable(Routes.REGISTER) {
-            val authViewModel: AuthViewModel = viewModel()
-            RegisterScreen(navController, authViewModel)
-        }
-
-        composable(Routes.FORGOT) {
-            val authViewModel: AuthViewModel = viewModel()
-            ForgotPasswordScreen(navController, authViewModel)
-        }
-
-        /* ---------------- MAIN ENTRY ---------------- */
+        /* ---------------- HOME SCREEN ---------------- */
 
         composable(Routes.HOME) {
             HomeScreen(navController, notificationViewModel)
@@ -78,25 +66,16 @@ fun AppNavigator() {
             AddNoteScreen("Special Note", navController, noteViewModel)
         }
 
+        // Fixed route for Reminders
         composable(
             Routes.ADD_REMINDER,
             arguments = listOf(navArgument("title") {
                 type = NavType.StringType
             })
         ) { backStackEntry ->
-            val title = backStackEntry.arguments?.getString("title") ?: ""
+            val title = backStackEntry.arguments?.getString("title") ?: "Reminder"
             val reminderViewModel: ReminderViewModel = viewModel()
             AddReminderScreen(title, navController, reminderViewModel)
-        }
-
-        composable(Routes.ADD_SPECIAL_REMINDER) {
-            val reminderViewModel: ReminderViewModel = viewModel()
-            AddReminderScreen("Special Day Reminder", navController, reminderViewModel)
-        }
-
-        composable(Routes.ADD_EVENT_REMINDER) {
-            val reminderViewModel: ReminderViewModel = viewModel()
-            AddReminderScreen("Event Reminder", navController, reminderViewModel)
         }
 
         composable(Routes.ADD_MEMORY) {
