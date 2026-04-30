@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -26,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.viewModel.ProfileViewModel
+import org.tensorflow.lite.schema.Padding
 
 @Composable
 fun ProfileInfo(profileViewModel: ProfileViewModel = viewModel()) {
@@ -46,7 +48,12 @@ fun ProfileInfo(profileViewModel: ProfileViewModel = viewModel()) {
     }
 
     Column(
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier.padding(
+            start = 8.dp,
+            top = 8.dp,
+            end = 8.dp,
+            bottom = 0.dp
+        ).height(120.dp)
     ) {
         Row(
             modifier = Modifier

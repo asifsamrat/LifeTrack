@@ -1,31 +1,31 @@
-import androidx.compose.runtime.Composable
-import com.example.lifetrack.data.model.Memory
+package com.example.lifetrack.ui.components.cards
 
 import android.net.Uri
 import android.view.ViewGroup
 import android.widget.VideoView
+import android.widget.FrameLayout
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
+import com.example.lifetrack.data.model.Memory
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.utils.ExpandableText
-
 
 @Composable
 fun MemoriesCard(memory: Memory) {
@@ -39,94 +39,59 @@ fun MemoriesCard(memory: Memory) {
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth()
-                    .height(80.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ){
+            // Videos Section
+            if (memory.videoUrls.isNotEmpty()) {
                 Text(
                     text = "Videos",
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
-                        .width(80.dp)
                 )
-
-                // Horizontal scrollable video list
                 LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp)
+                    modifier = Modifier.fillMaxWidth().height(90.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (memory.videoUrls.isNotEmpty()) {
-                        items(memory.videoUrls) { videoUrl ->
-                            VideoCard(videoUrl)
-                        }
-                    } else {
-                        item {
-                            Text(
-                                text = "*No videos available",
-                                fontSize = 10.sp,
-                                fontStyle = FontStyle.Italic,
-                                color = Color.Red
-                            )
-                        }
+                    items(memory.videoUrls) { videoUrl ->
+                        VideoCard(videoUrl)
                     }
                 }
-
             }
-            Row(
-                modifier = Modifier.fillMaxWidth()
-                    .height(80.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ){
+
+            // Images Section
+            if (memory.imageUrls.isNotEmpty()) {
                 Text(
                     text = "Images",
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
-                        .width(80.dp)
                 )
-
-                //Horizontal scrollable image list
                 LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp)
+                    modifier = Modifier.fillMaxWidth().height(95.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (memory.imageUrls.isNotEmpty()) {
-                        items(memory.imageUrls) { imageUrl ->
-                            ImageCard(imageUrl)
-                        }
-                    } else {
-                        item {
-                            Text(
-                                text = "*No images available",
-                                fontSize = 10.sp,
-                                fontStyle = FontStyle.Italic,
-                                color = Color.Red
-                            )
-                        }
+                    items(memory.imageUrls) { imageUrl ->
+                        ImageCard(imageUrl)
                     }
                 }
-
             }
 
             HorizontalDivider(
                 color = Color.LightGray,
                 thickness = 1.dp,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
             )
-
 
             Text(
-                text = "${memory.date} ${memory.time}",
+                text = "${DateTimeUtils.formatForDisplay(memory.date)} at ${DateTimeUtils.formatTimeForDisplay(memory.time)}",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.fillMaxWidth()
-                    .padding(top = 2.dp),
-                textAlign = TextAlign.End
+                color = Color.Gray,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = androidx.compose.ui.text.style.TextAlign.End
             )
+            
             Text(
                 text = memory.title,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = DarkGreen
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -135,46 +100,71 @@ fun MemoriesCard(memory: Memory) {
     }
 }
 
-
-
-//For Video Player
 @Composable
 fun VideoCard(videoUrl: String) {
+    var isBuffering by remember { mutableStateOf(true) }
+    var hasError by remember { mutableStateOf(false) }
+    
     Card(
         modifier = Modifier
-            .width(200.dp)
-            .height(120.dp),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+            .width(100.dp)
+            .height(75.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        AndroidView(
-            factory = { context ->
-                // Create a VideoView or a player (like ExoPlayer) and set videoUrl
-                val videoView = VideoView(context)
-                videoView.setVideoURI(Uri.parse(videoUrl))
-                videoView.layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                videoView.setOnPreparedListener { mediaPlayer ->
-                    mediaPlayer.isLooping = true
-                    videoView.start()
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            if (hasError) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.Error, contentDescription = "Error", tint = Color.Red)
+                    Text("Error loading video", fontSize = 10.sp, color = Color.Red)
                 }
-                videoView
-            },
-            modifier = Modifier.fillMaxSize()
-        )
+            } else {
+                AndroidView(
+                    factory = { context ->
+                        VideoView(context).apply {
+                            layoutParams = FrameLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                            
+                            setVideoURI(Uri.parse(videoUrl))
+                            
+                            setOnPreparedListener { mp ->
+                                isBuffering = false
+                                mp.isLooping = true
+                                // Start muted for preview
+                                mp.setVolume(0f, 0f) 
+                                start()
+                            }
+                            
+                            setOnErrorListener { _, _, _ ->
+                                isBuffering = false
+                                hasError = true
+                                true
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            
+            if (isBuffering && !hasError) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(32.dp),
+                    color = DarkGreen,
+                    strokeWidth = 3.dp
+                )
+            }
+        }
     }
 }
 
-
-//For View Images
 @Composable
 fun ImageCard(imageUrl: String) {
     Card(
         modifier = Modifier
-            .width(120.dp)
-            .height(120.dp),
+            .width(100.dp)
+            .height(75.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
         AsyncImage(
@@ -185,5 +175,3 @@ fun ImageCard(imageUrl: String) {
         )
     }
 }
-
-

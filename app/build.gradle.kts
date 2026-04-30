@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.runtime)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.play.services.cast.tv)
+    implementation(libs.litert.metadata)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

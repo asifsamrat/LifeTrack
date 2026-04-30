@@ -1,41 +1,25 @@
 package com.example.lifetrack.ui.screens.navbarScreens
 
-
-import MemoriesCard
-import android.net.Uri
-import android.view.ViewGroup
-import android.widget.VideoView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import coil.compose.AsyncImage
 import com.example.lifetrack.data.model.Memory
 import com.example.lifetrack.R
+import com.example.lifetrack.ui.components.cards.MemoriesCard
 import com.example.lifetrack.ui.theme.DarkGreen
-import com.example.lifetrack.ui.theme.GreenLight
 import com.example.lifetrack.ui.theme.white
+import com.example.lifetrack.utils.DateTimeUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -54,7 +38,6 @@ fun MemoriesScreen() {
         if (userId.isNotEmpty()) {
             db.collection("memories")
                 .whereEqualTo("userId", userId)
-                // Removed .orderBy("date") to avoid Index error
                 .addSnapshotListener { snapshot, error ->
                     isLoading = false
                     if (error != null) {
@@ -62,9 +45,9 @@ fun MemoriesScreen() {
                         return@addSnapshotListener
                     }
                     if (snapshot != null) {
-                        // Sort in memory instead of server-side to fix the Index error
+                        // Sort in memory using DateTimeUtils for accurate ordering (Date + Time)
                         memories = snapshot.toObjects(Memory::class.java)
-                            .sortedByDescending { it.date }
+                            .sortedByDescending { DateTimeUtils.parseToMillis(it.date, it.time) }
                     }
                 }
         } else {

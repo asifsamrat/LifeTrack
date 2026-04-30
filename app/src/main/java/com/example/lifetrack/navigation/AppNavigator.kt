@@ -48,6 +48,16 @@ fun AppNavigator() {
             LoginScreen(navController, authViewModel)
         }
 
+        composable(Routes.REGISTER) {
+            val authViewModel: AuthViewModel = viewModel()
+            RegisterScreen(navController, authViewModel)
+        }
+
+        composable (Routes.FORGOT){
+            val authViewModel: AuthViewModel = viewModel()
+            ForgotPasswordScreen(navController, authViewModel)
+        }
+
         /* ---------------- HOME SCREEN ---------------- */
 
         composable(Routes.HOME) {

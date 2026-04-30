@@ -42,7 +42,7 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
             Column {
                 HorizontalDivider(
                     color = Color.LightGray,
-                    thickness = 0.5.dp,
+                    thickness = 1.dp,
                     modifier = Modifier.shadow(4.dp)
                 )
                 NavigationBar (

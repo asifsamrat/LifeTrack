@@ -236,6 +236,7 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
                 onClick = {
                     if (title.isNotEmpty() && date.isNotEmpty() && time.isNotEmpty() && userId.isNotEmpty()) {
                         viewModel.saveMemory(
+                            context = context,
                             title = title,
                             description = description,
                             date = date,
