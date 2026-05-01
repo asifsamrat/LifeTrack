@@ -20,9 +20,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.lifetrack.navigation.BottomNavItem
+import com.example.lifetrack.navigation.Routes
 import com.example.lifetrack.ui.screens.NotificationScreen
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLight
+import com.example.lifetrack.viewModel.AuthViewModel
 import com.example.lifetrack.viewModel.MemoryViewModel
 import com.example.lifetrack.viewModel.NoteViewModel
 import com.example.lifetrack.viewModel.NotificationViewModel
@@ -39,6 +41,7 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
     val noteViewModel: NoteViewModel = viewModel()
     val reminderViewModel: ReminderViewModel = viewModel()
     val memoryViewModel: MemoryViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
 
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
@@ -200,7 +203,13 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
                     notificationViewModel = notificationViewModel,
                     noteViewModel = noteViewModel,
                     reminderViewModel = reminderViewModel,
-                    memoryViewModel = memoryViewModel
+                    memoryViewModel = memoryViewModel,
+                    onSignOut = {
+                        authViewModel.logout()
+                        rootNavController.navigate(Routes.LOGIN) {
+                            popUpTo(Routes.HOME) { inclusive = true }
+                        }
+                    }
                 )
             }
 

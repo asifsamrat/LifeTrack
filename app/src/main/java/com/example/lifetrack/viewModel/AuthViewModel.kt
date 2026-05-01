@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.example.lifetrack.data.auth.AuthRepository
 
 class AuthViewModel: ViewModel() {
-     val authRepository = AuthRepository()
+     private val authRepository = AuthRepository()
 
      //Login Message and Success
      var loginMessage = mutableStateOf("")
@@ -49,6 +49,14 @@ class AuthViewModel: ViewModel() {
             forgotMessage.value = msg
             forgotSuccess.value = success
         }
+    }
+
+    fun logout() {
+        authRepository.logout()
+    }
+
+    fun isUserLoggedIn(): Boolean {
+        return authRepository.isUserLoggedIn()
     }
 
 }

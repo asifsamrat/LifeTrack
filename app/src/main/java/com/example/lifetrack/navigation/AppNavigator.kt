@@ -35,26 +35,26 @@ fun AppNavigator() {
 
     val navController = rememberNavController()
     val notificationViewModel: NotificationViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
+
+    val startDestination = if (authViewModel.isUserLoggedIn()) Routes.HOME else Routes.LOGIN
 
     NavHost(
         navController = navController,
-        startDestination = Routes.LOGIN
+        startDestination = startDestination
     ) {
 
         /* ---------------- AUTH FLOW ---------------- */
 
         composable(Routes.LOGIN) {
-            val authViewModel: AuthViewModel = viewModel()
             LoginScreen(navController, authViewModel)
         }
 
         composable(Routes.REGISTER) {
-            val authViewModel: AuthViewModel = viewModel()
             RegisterScreen(navController, authViewModel)
         }
 
         composable (Routes.FORGOT){
-            val authViewModel: AuthViewModel = viewModel()
             ForgotPasswordScreen(navController, authViewModel)
         }
 

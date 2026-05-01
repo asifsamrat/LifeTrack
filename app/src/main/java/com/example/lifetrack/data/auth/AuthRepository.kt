@@ -17,10 +17,12 @@ class AuthRepository {
                     // Reload user to get latest verification status
                     user?.reload()?.addOnCompleteListener {
 
-                        if (user.isEmailVerified) {
+                        if (user != null && user.isEmailVerified) {
                             onResult(true, "Login Successful")
-                        } else {
+                        } else if (user != null && !user.isEmailVerified) {
                             onResult(false, "Please verify your email first")
+                        } else {
+                            onResult(false, "Authentication failed")
                         }
                     }
 
@@ -65,5 +67,15 @@ class AuthRepository {
                     onResult(false, it.exception?.message ?: "Error")
                 }
             }
+    }
+
+    // Logout
+    fun logout() {
+        auth.signOut()
+    }
+
+    // Check if user is logged in
+    fun isUserLoggedIn(): Boolean {
+        return auth.currentUser != null && auth.currentUser!!.isEmailVerified
     }
 }

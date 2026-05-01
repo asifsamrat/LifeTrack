@@ -25,7 +25,8 @@ fun HomeTab(
     notificationViewModel: NotificationViewModel,
     noteViewModel: NoteViewModel,
     reminderViewModel: ReminderViewModel,
-    memoryViewModel: MemoryViewModel
+    memoryViewModel: MemoryViewModel,
+    onSignOut: () -> Unit
 ) {
     val unreadCount = notificationViewModel.unreadCount
 
@@ -51,7 +52,8 @@ fun HomeTab(
                     unreadCount = unreadCount,
                     onNotificationClick = {
                         navController.navigate("notification")
-                    }
+                    },
+                    onSignOutClick = onSignOut
                 )
 
                 // Profile Section
