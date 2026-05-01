@@ -36,29 +36,26 @@ import com.example.lifetrack.ui.theme.GreenLime
 import com.example.lifetrack.ui.theme.white
 import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.viewModel.ReminderViewModel
-import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel) {
     var selectedTab by remember { mutableStateOf("Event") }
-    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-    var reminderList by remember { mutableStateOf<List<Reminder>>(emptyList()) }
+    
+    // Use cached reminders from ViewModel
+    val allReminders by viewModel.reminders
 
-    LaunchedEffect(selectedTab, userId) {
-        if (userId.isNotEmpty()) {
-            viewModel.getRemindersByType(userId, selectedTab) { reminders ->
-                val now = System.currentTimeMillis()
-                reminderList = reminders
-                    .filter { reminder ->
-                        val timestamp = DateTimeUtils.parseToMillis(reminder.date, reminder.time)
-                        timestamp >= now // Only non-expired
-                    }
-                    .sortedBy { reminder ->
-                        DateTimeUtils.parseToMillis(reminder.date, reminder.time) // Sorted order
-                    }
+    val reminderList = remember(allReminders, selectedTab) {
+        val now = System.currentTimeMillis()
+        allReminders
+            .filter { it.reminderType == selectedTab }
+            .filter { reminder ->
+                val timestamp = DateTimeUtils.parseToMillis(reminder.date, reminder.time)
+                timestamp >= now // Only non-expired
             }
-        }
+            .sortedBy { reminder ->
+                DateTimeUtils.parseToMillis(reminder.date, reminder.time) // Sorted order
+            }
     }
 
     Scaffold(
@@ -130,28 +127,20 @@ fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel) {
                         EventReminderItem(
                             reminder = reminder,
                             onEdit = {
-                                navController.navigate("add_reminder?reminderId=${reminder.id}")
+                                navController.navigate("add_reminder?reminderType=${reminder.reminderType}&reminderId=${reminder.id}")
                             },
                             onDelete = {
-                                viewModel.deleteReminder(reminder.id) { success ->
-                                    if (success) {
-                                        reminderList = reminderList.filter { it.id != reminder.id }
-                                    }
-                                }
+                                viewModel.deleteReminder(reminder.id)
                             }
                         )
                     } else {
                         SpecialDayReminderItem(
                             reminder = reminder,
                             onEdit = {
-                                navController.navigate("add_reminder?reminderId=${reminder.id}")
+                                navController.navigate("add_reminder?reminderType=${reminder.reminderType}&reminderId=${reminder.id}")
                             },
                             onDelete = {
-                                viewModel.deleteReminder(reminder.id) { success ->
-                                    if (success) {
-                                        reminderList = reminderList.filter { it.id != reminder.id }
-                                    }
-                                }
+                                viewModel.deleteReminder(reminder.id)
                             }
                         )
                     }

@@ -26,23 +26,19 @@ import com.example.lifetrack.ui.theme.GreenLight
 import com.example.lifetrack.ui.theme.white
 import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.viewModel.NoteViewModel
-import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotesScreen(rootNavController: NavController, noteViewModel: NoteViewModel) {
     var selectedTab by remember { mutableStateOf("Daily Note") }
-    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     
-    var noteList by remember { mutableStateOf<List<Note>>(emptyList()) }
-
-    LaunchedEffect(selectedTab, userId) {
-        if (userId.isNotEmpty()) {
-            noteViewModel.getNotesByType(userId, selectedTab) { notes ->
-                // Sorting notes by date (newest first)
-                noteList = notes.sortedByDescending { DateTimeUtils.parseToMillis(it.date) }
-            }
-        }
+    // Get the cached list of notes from the ViewModel
+    val allNotes by noteViewModel.notes
+    
+    // Filter and sort the cached notes locally
+    val filteredNotes = remember(allNotes, selectedTab) {
+        allNotes.filter { it.noteType == selectedTab }
+            .sortedByDescending { DateTimeUtils.parseToMillis(it.date) }
     }
 
     Scaffold(
@@ -109,7 +105,7 @@ fun NotesScreen(rootNavController: NavController, noteViewModel: NoteViewModel) 
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                if (noteList.isEmpty()) {
+                if (filteredNotes.isEmpty()) {
                     item {
                         Box(
                             modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
@@ -119,18 +115,14 @@ fun NotesScreen(rootNavController: NavController, noteViewModel: NoteViewModel) 
                         }
                     }
                 } else {
-                    items(noteList) { note ->
+                    items(filteredNotes) { note ->
                         NoteCard(
                             note = note,
                             onEdit = {
                                 rootNavController.navigate("add_note?noteType=${note.noteType}&noteId=${note.id}")
                             },
                             onDelete = {
-                                noteViewModel.deleteNote(note.id) { success ->
-                                    if (success) {
-                                        noteList = noteList.filter { it.id != note.id }
-                                    }
-                                }
+                                noteViewModel.deleteNote(note.id)
                             }
                         )
                     }
@@ -162,7 +154,7 @@ fun TabButton(
             text = text,
             color = if (isSelected) Color.White else Color.Black,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            fontSize = 14.sp
+            fontSize = 12.sp
         )
     }
 }

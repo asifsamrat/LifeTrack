@@ -15,48 +15,23 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.lifetrack.data.model.Memory
 import com.example.lifetrack.R
 import com.example.lifetrack.ui.components.cards.MemoriesCard
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.white
 import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.viewModel.MemoryViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MemoriesScreen(navController: NavController, memoryViewModel: MemoryViewModel) {
-    val db = FirebaseFirestore.getInstance()
-    val auth = FirebaseAuth.getInstance()
-    val userId = auth.currentUser?.uid ?: ""
     
-    var memories by remember { mutableStateOf<List<Memory>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(userId) {
-        if (userId.isNotEmpty()) {
-            db.collection("memories")
-                .whereEqualTo("userId", userId)
-                .addSnapshotListener { snapshot, error ->
-                    isLoading = false
-                    if (error != null) {
-                        errorMessage = error.message
-                        return@addSnapshotListener
-                    }
-                    if (snapshot != null) {
-                        // Manually map document IDs to the id field of the Memory object
-                        memories = snapshot.documents.mapNotNull { document ->
-                            document.toObject(Memory::class.java)?.copy(id = document.id)
-                        }.sortedByDescending { DateTimeUtils.parseToMillis(it.date, it.time) }
-                    }
-                }
-        } else {
-            isLoading = false
-            errorMessage = "User not logged in"
-        }
+    // Use cached memories from ViewModel
+    val allMemories by memoryViewModel.memories
+    
+    // Sort memories locally
+    val sortedMemories = remember(allMemories) {
+        allMemories.sortedByDescending { DateTimeUtils.parseToMillis(it.date, it.time) }
     }
 
     Scaffold(
@@ -92,15 +67,7 @@ fun MemoriesScreen(navController: NavController, memoryViewModel: MemoryViewMode
                 .padding(padding)
                 .background(color = white)
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (errorMessage != null) {
-                Text(
-                    text = "Error: $errorMessage",
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.align(Alignment.Center).padding(16.dp)
-                )
-            } else if (memories.isEmpty()) {
+            if (sortedMemories.isEmpty()) {
                 Text(
                     text = "No memories saved yet.",
                     modifier = Modifier.align(Alignment.Center)
@@ -111,18 +78,14 @@ fun MemoriesScreen(navController: NavController, memoryViewModel: MemoryViewMode
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(memories) { memory ->
+                    items(sortedMemories) { memory ->
                         MemoriesCard(
                             memory = memory,
                             onEdit = {
                                 navController.navigate("add_memory?memoryId=${it.id}")
                             },
                             onDelete = {
-                                memoryViewModel.deleteMemory(it.id) { success ->
-                                    if (success) {
-                                        // The snapshot listener will handle the list update automatically
-                                    }
-                                }
+                                memoryViewModel.deleteMemory(it.id)
                             }
                         )
                     }

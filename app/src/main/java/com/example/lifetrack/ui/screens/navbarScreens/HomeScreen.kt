@@ -27,12 +27,29 @@ import com.example.lifetrack.viewModel.MemoryViewModel
 import com.example.lifetrack.viewModel.NoteViewModel
 import com.example.lifetrack.viewModel.NotificationViewModel
 import com.example.lifetrack.viewModel.ReminderViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun HomeScreen(rootNavController: NavController, notificationViewModel: NotificationViewModel) {
     val bottomNavController = rememberNavController()
     val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    // Initialize ViewModels here so they are scoped to HomeScreen
+    val noteViewModel: NoteViewModel = viewModel()
+    val reminderViewModel: ReminderViewModel = viewModel()
+    val memoryViewModel: MemoryViewModel = viewModel()
+
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+    // Start listening for data once when the user is logged in
+    LaunchedEffect(userId) {
+        if (userId.isNotEmpty()) {
+            noteViewModel.startListening(userId)
+            reminderViewModel.startListening(userId)
+            memoryViewModel.startListening(userId)
+        }
+    }
 
     var showMenu by remember { mutableStateOf(false) }
 
@@ -178,7 +195,13 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(BottomNavItem.Home.route) {
-                HomeTab(navController = rootNavController, notificationViewModel = notificationViewModel)
+                HomeTab(
+                    navController = rootNavController, 
+                    notificationViewModel = notificationViewModel,
+                    noteViewModel = noteViewModel,
+                    reminderViewModel = reminderViewModel,
+                    memoryViewModel = memoryViewModel
+                )
             }
 
             composable("notification") {
@@ -188,15 +211,12 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
                 )
             }
             composable(BottomNavItem.Notes.route) {
-                val noteViewModel: NoteViewModel = viewModel()
                 NotesScreen(rootNavController, noteViewModel)
             }
             composable(BottomNavItem.Reminder.route) {
-                val reminderViewModel: ReminderViewModel = viewModel()
                 ReminderScreen(rootNavController, reminderViewModel)
             }
             composable(BottomNavItem.Memories.route) {
-                val memoryViewModel: MemoryViewModel = viewModel()
                 MemoriesScreen(rootNavController, memoryViewModel)
             }
         }

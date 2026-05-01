@@ -1,6 +1,5 @@
 package com.example.lifetrack.ui.screens.navbarScreens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,12 +12,21 @@ import androidx.navigation.NavController
 import com.example.lifetrack.ui.components.ProfileInfo
 import com.example.lifetrack.ui.components.TimeLineScreen
 import com.example.lifetrack.ui.components.TopHeader
+import com.example.lifetrack.viewModel.MemoryViewModel
+import com.example.lifetrack.viewModel.NoteViewModel
 import com.example.lifetrack.viewModel.NotificationViewModel
+import com.example.lifetrack.viewModel.ReminderViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeTab(navController: NavController, notificationViewModel: NotificationViewModel) {
+fun HomeTab(
+    navController: NavController, 
+    notificationViewModel: NotificationViewModel,
+    noteViewModel: NoteViewModel,
+    reminderViewModel: ReminderViewModel,
+    memoryViewModel: MemoryViewModel
+) {
     val unreadCount = notificationViewModel.unreadCount
 
     Column(
@@ -52,6 +60,10 @@ fun HomeTab(navController: NavController, notificationViewModel: NotificationVie
             }
         }
         // Upcoming reminder and memories Time line
-        TimeLineScreen()
+        TimeLineScreen(
+            noteViewModel = noteViewModel,
+            reminderViewModel = reminderViewModel,
+            memoryViewModel = memoryViewModel
+        )
     }
 }

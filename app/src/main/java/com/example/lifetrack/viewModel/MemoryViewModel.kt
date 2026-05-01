@@ -2,6 +2,7 @@ package com.example.lifetrack.viewModel
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.cloudinary.android.MediaManager
@@ -9,11 +10,18 @@ import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
 import com.example.lifetrack.data.model.Memory
 import com.example.lifetrack.data.repository.MemoryRepository
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 
 
 class MemoryViewModel : ViewModel() {
 
     private val repository = MemoryRepository()
+    private val db = FirebaseFirestore.getInstance()
+    private var memoryListener: ListenerRegistration? = null
+
+    private val _memories = mutableStateOf<List<Memory>>(emptyList())
+    val memories: State<List<Memory>> = _memories
 
     var isSaving = mutableStateOf(false)
         private set
@@ -23,6 +31,26 @@ class MemoryViewModel : ViewModel() {
 
     var isSuccess = mutableStateOf(false)
         private set
+
+    fun startListening(userId: String) {
+        if (memoryListener != null) return
+        
+        memoryListener = db.collection("memories")
+            .whereEqualTo("userId", userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) return@addSnapshotListener
+                if (snapshot != null) {
+                    _memories.value = snapshot.documents.mapNotNull { doc ->
+                        doc.toObject(Memory::class.java)?.copy(id = doc.id)
+                    }
+                }
+            }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        memoryListener?.remove()
+    }
 
     fun saveMemory(
         context: Context,
@@ -43,10 +71,6 @@ class MemoryViewModel : ViewModel() {
 
         isSaving.value = true
 
-        // For update, we might already have URLs. 
-        // This simple implementation re-uploads everything if they are Uris.
-        // A more complex one would check if the Uri is actually a remote URL string.
-        
         uploadMultipleToCloudinary(images, "image") { imageUrls ->
             uploadMultipleToCloudinary(videos, "video") { videoUrls ->
 
@@ -72,11 +96,7 @@ class MemoryViewModel : ViewModel() {
 
     fun deleteMemory(memoryId: String, onComplete: (Boolean) -> Unit = {}) {
         repository.deleteMemory(memoryId) { success ->
-            if (success) {
-                message.value = "Memory deleted"
-            } else {
-                message.value = "Failed to delete"
-            }
+            message.value = if (success) "Memory deleted" else "Failed to delete"
             onComplete(success)
         }
     }
@@ -91,7 +111,6 @@ class MemoryViewModel : ViewModel() {
         var processedCount = 0
 
         uris.forEach { uri ->
-            // Check if it's already a web url
             if (uri.toString().startsWith("http")) {
                 urls.add(uri.toString())
                 processedCount++
@@ -127,14 +146,13 @@ class MemoryViewModel : ViewModel() {
         }
     }
 
-    fun getMemoriesByUserId(userId: String, onResult: (List<Memory>) -> Unit) {
-        repository.getMemoriesByUserId(userId) { memories ->
-            onResult(memories)
-        }
-    }
-
     fun getMemoryById(memoryId: String, onResult: (Memory?) -> Unit) {
-        repository.getMemoryById(memoryId, onResult)
+        val cached = _memories.value.find { it.id == memoryId }
+        if (cached != null) {
+            onResult(cached)
+        } else {
+            repository.getMemoryById(memoryId, onResult)
+        }
     }
 
     fun resetState() {

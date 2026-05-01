@@ -1,12 +1,20 @@
 package com.example.lifetrack.viewModel
 
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.lifetrack.data.model.Reminder
 import com.example.lifetrack.data.repository.ReminderRepository
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 
 class ReminderViewModel : ViewModel() {
     private val reminderRepository = ReminderRepository()
+    private val db = FirebaseFirestore.getInstance()
+    private var reminderListener: ListenerRegistration? = null
+
+    private val _reminders = mutableStateOf<List<Reminder>>(emptyList())
+    val reminders: State<List<Reminder>> = _reminders
 
     var message = mutableStateOf("")
         private set
@@ -14,6 +22,26 @@ class ReminderViewModel : ViewModel() {
         private set
     var isSaving = mutableStateOf(false)
         private set
+
+    fun startListening(userId: String) {
+        if (reminderListener != null) return
+        
+        reminderListener = db.collection("reminders")
+            .whereEqualTo("userId", userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) return@addSnapshotListener
+                if (snapshot != null) {
+                    _reminders.value = snapshot.documents.mapNotNull { doc ->
+                        doc.toObject(Reminder::class.java)?.copy(id = doc.id)
+                    }
+                }
+            }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        reminderListener?.remove()
+    }
 
     fun saveReminder(reminder: Reminder) {
         isSaving.value = true
@@ -26,23 +54,18 @@ class ReminderViewModel : ViewModel() {
 
     fun deleteReminder(reminderId: String, onComplete: (Boolean) -> Unit = {}) {
         reminderRepository.deleteReminder(reminderId) { success ->
-            if (success) {
-                message.value = "Reminder deleted successfully"
-            } else {
-                message.value = "Failed to delete reminder"
-            }
+            message.value = if (success) "Reminder deleted successfully" else "Failed to delete reminder"
             onComplete(success)
         }
     }
 
-    fun getRemindersByType(userId: String, reminderType: String, onResult: (List<Reminder>) -> Unit) {
-        reminderRepository.getRemindersByType(userId, reminderType) { reminders ->
-            onResult(reminders)
-        }
-    }
-
     fun getReminderById(reminderId: String, onResult: (Reminder?) -> Unit) {
-        reminderRepository.getReminderById(reminderId, onResult)
+        val cached = _reminders.value.find { it.id == reminderId }
+        if (cached != null) {
+            onResult(cached)
+        } else {
+            reminderRepository.getReminderById(reminderId, onResult)
+        }
     }
 
     fun resetState() {

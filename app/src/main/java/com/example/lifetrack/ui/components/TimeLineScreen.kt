@@ -23,16 +23,12 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.lifetrack.data.model.Memory
-import com.example.lifetrack.data.model.Note
-import com.example.lifetrack.data.model.Reminder
 import com.example.lifetrack.ui.components.cards.TimeLineMemoriesCard
 import com.example.lifetrack.ui.components.cards.TimeLineNoteCard
 import com.example.lifetrack.ui.components.cards.TimeLineReminderCard
@@ -41,7 +37,6 @@ import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.viewModel.MemoryViewModel
 import com.example.lifetrack.viewModel.NoteViewModel
 import com.example.lifetrack.viewModel.ReminderViewModel
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
 @Composable
@@ -50,42 +45,31 @@ fun TimeLineScreen(
     memoryViewModel: MemoryViewModel = viewModel(),
     noteViewModel: NoteViewModel = viewModel()
 ) {
-    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    // Observe cached data from ViewModels
+    val allReminders by reminderViewModel.reminders
+    val allMemories by memoryViewModel.memories
+    val allNotes by noteViewModel.notes
 
-    var upcomingReminders by remember { mutableStateOf<List<Reminder>>(emptyList()) }
-    var upcomingMemories by remember { mutableStateOf<List<Memory>>(emptyList()) }
-    var recentNotes by remember { mutableStateOf<List<Note>>(emptyList()) }
+    // Locally filter and sort the cached data
+    val now = System.currentTimeMillis()
 
-    LaunchedEffect(userId) {
-        if (userId.isNotEmpty()) {
-            val now = System.currentTimeMillis()
-            
-            // Fetch Reminders: Filter non-expired and sort ascending
-            reminderViewModel.getRemindersByType(userId, "Event") { events ->
-                reminderViewModel.getRemindersByType(userId, "Special") { specials ->
-                    upcomingReminders = (events + specials)
-                        .filter { DateTimeUtils.parseToMillis(it.date, it.time) >= now }
-                        .sortedBy { DateTimeUtils.parseToMillis(it.date, it.time) }
-                }
-            }
-            
-            // Fetch Memories: Filter non-expired and sort ascending
-            memoryViewModel.getMemoriesByUserId(userId) { memories ->
-                upcomingMemories = memories
-                    .filter { DateTimeUtils.parseToMillis(it.date, it.time) >= now }
-                    .sortedBy { DateTimeUtils.parseToMillis(it.date, it.time) }
-                    .take(3)
-            }
-            
-            // Fetch Notes: Sorted by date descending
-            noteViewModel.getNotesByType(userId, "Daily Note") { daily ->
-                noteViewModel.getNotesByType(userId, "Special Note") { special ->
-                    recentNotes = (daily + special)
-                        .sortedByDescending { DateTimeUtils.parseToMillis(it.date) }
-                        .take(3)
-                }
-            }
-        }
+    val upcomingReminders = remember(allReminders) {
+        allReminders
+            .filter { DateTimeUtils.parseToMillis(it.date, it.time) >= now }
+            .sortedBy { DateTimeUtils.parseToMillis(it.date, it.time) }
+    }
+
+    val upcomingMemories = remember(allMemories) {
+        allMemories
+            .filter { DateTimeUtils.parseToMillis(it.date, it.time) >= now }
+            .sortedBy { DateTimeUtils.parseToMillis(it.date, it.time) }
+            .take(3)
+    }
+
+    val recentNotes = remember(allNotes) {
+        allNotes
+            .sortedByDescending { DateTimeUtils.parseToMillis(it.date) }
+            .take(3)
     }
 
     Column(
