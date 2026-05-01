@@ -34,7 +34,8 @@ import com.google.firebase.auth.FirebaseAuth
 fun AddNoteScreen(
     noteType: String,
     navController: NavHostController,
-    noteViewModel: NoteViewModel
+    noteViewModel: NoteViewModel,
+    noteId: String? = null
 ) {
 
     var title by remember { mutableStateOf("") }
@@ -43,13 +44,25 @@ fun AddNoteScreen(
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     //Note save message and success
-    var message by noteViewModel.message
-    var success by noteViewModel.isSuccess
+    val message by noteViewModel.message
+    val success by noteViewModel.isSuccess
     val context = LocalContext.current
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
 
+    // Load existing note if editing
+    LaunchedEffect(noteId) {
+        if (noteId != null) {
+            noteViewModel.getNoteById(noteId) { note ->
+                if (note != null) {
+                    title = note.title
+                    description = note.description
+                    date = note.date
+                }
+            }
+        }
+    }
 
     if (showDatePicker) {
         DatePickerDialog(
@@ -91,7 +104,7 @@ fun AddNoteScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Add New ${noteType}",
+                            text = if (noteId == null) "Add New $noteType" else "Edit $noteType",
                             fontWeight = FontWeight.Bold,
                             color = DarkGreen
                         )
@@ -182,21 +195,19 @@ fun AddNoteScreen(
             LaunchedEffect(success) {
                 if (success) {
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    navController.navigate("home_main") {
-                        popUpTo("add_note") {
-                            inclusive = true
-                        }
-                    }
+                    noteViewModel.resetState()
+                    navController.popBackStack()
                 }
             }
 
             Button(
                 onClick = {
                     if (title.isBlank() || description.isBlank() || date.isBlank()) {
-                        noteViewModel.message.value = "All fields are required"
+                        Toast.makeText(context, "All fields are required", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
                     val note = Note(
+                        id = noteId ?: "",
                         noteType = noteType,
                         title = title,
                         description = description,
@@ -214,7 +225,7 @@ fun AddNoteScreen(
                 )
             ) {
                 Text(
-                    "Save Note",
+                    text = if (noteId == null) "Save Note" else "Update Note",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White

@@ -1,6 +1,7 @@
 package com.example.lifetrack.data.model
 
-class Note (
+data class Note (
+    val id: String = "",
     val noteType: String = "",
     val title: String = "",
     val description: String = "",

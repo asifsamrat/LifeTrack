@@ -25,8 +25,8 @@ object Routes {
     const val ADD_SPECIAL_NOTE = "add_special_note"
 
     const val ADD_MEMORY = "add_memory"
-
-    const val ADD_REMINDER = "add_reminder/{title}"
+    const val ADD_REMINDER = "add_reminder"
+    
     const val NOTIFICATION = "notification"
 }
 
@@ -66,9 +66,24 @@ fun AppNavigator() {
 
         /* ---------------- ADD SCREENS ---------------- */
 
-        composable(Routes.ADD_NOTE) {
+        composable(
+            "${Routes.ADD_NOTE}?noteType={noteType}&noteId={noteId}",
+            arguments = listOf(
+                navArgument("noteType") {
+                    type = NavType.StringType
+                    defaultValue = "Daily Note"
+                },
+                navArgument("noteId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) { backStackEntry ->
+            val noteType = backStackEntry.arguments?.getString("noteType") ?: "Daily Note"
+            val noteId = backStackEntry.arguments?.getString("noteId")
             val noteViewModel: NoteViewModel = viewModel()
-            AddNoteScreen("Daily Note", navController, noteViewModel)
+            AddNoteScreen(noteType, navController, noteViewModel, noteId)
         }
 
         composable(Routes.ADD_SPECIAL_NOTE) {
@@ -76,21 +91,37 @@ fun AppNavigator() {
             AddNoteScreen("Special Note", navController, noteViewModel)
         }
 
-        // Fixed route for Reminders
         composable(
-            Routes.ADD_REMINDER,
-            arguments = listOf(navArgument("title") {
-                type = NavType.StringType
-            })
+            "${Routes.ADD_REMINDER}?reminderType={reminderType}&reminderId={reminderId}",
+            arguments = listOf(
+                navArgument("reminderType") {
+                    type = NavType.StringType
+                    defaultValue = "Event"
+                },
+                navArgument("reminderId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
         ) { backStackEntry ->
-            val title = backStackEntry.arguments?.getString("title") ?: "Reminder"
+            val reminderType = backStackEntry.arguments?.getString("reminderType") ?: "Event"
+            val reminderId = backStackEntry.arguments?.getString("reminderId")
             val reminderViewModel: ReminderViewModel = viewModel()
-            AddReminderScreen(title, navController, reminderViewModel)
+            AddReminderScreen(reminderType, navController, reminderViewModel, reminderId)
         }
 
-        composable(Routes.ADD_MEMORY) {
+        composable(
+            "${Routes.ADD_MEMORY}?memoryId={memoryId}",
+            arguments = listOf(navArgument("memoryId") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            })
+        ) { backStackEntry ->
+            val memoryId = backStackEntry.arguments?.getString("memoryId")
             val memoryViewModel: MemoryViewModel = viewModel()
-            AddMemoryScreen(navController, memoryViewModel)
+            AddMemoryScreen(navController, memoryViewModel, memoryId)
         }
 
         composable(Routes.NOTIFICATION) {

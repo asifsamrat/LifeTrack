@@ -202,31 +202,21 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
                     )
                 }
             }
-            navController.navigate("home_main") {
-                popUpTo("login") {
-                    inclusive = true
+
+            LaunchedEffect(success) {
+                if (success) {
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    navController.navigate("home_main") {
+                        popUpTo("login") {
+                            inclusive = true
+                        }
+                    }
+                    viewModel.loginMessage.value = ""
+                    viewModel.loginSuccess.value = false
                 }
             }
 
-//            LaunchedEffect(success) {
-//                if (success) {
-//                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-//                    navController.navigate("home_main") {
-//                        popUpTo("login") {
-//                            inclusive = true
-//                        }
-//                    }
-//                    viewModel.loginMessage.value = ""
-//                    viewModel.loginSuccess.value = false
-//                }
-//            }
 
-
-//            navController.navigate("home_main") {
-//                popUpTo("login") {
-//                    inclusive = true
-//                }
-//            }
 
 
             //Login Button

@@ -1,6 +1,7 @@
 package com.example.lifetrack.data.model
 
 data class Memory (
+    val id: String = "",
     val title: String = "",
     val description: String = "",
     val date: String = "",

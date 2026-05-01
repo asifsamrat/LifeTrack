@@ -14,18 +14,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.lifetrack.data.model.Memory
 import com.example.lifetrack.R
 import com.example.lifetrack.ui.components.cards.MemoriesCard
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.white
 import com.example.lifetrack.utils.DateTimeUtils
+import com.example.lifetrack.viewModel.MemoryViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MemoriesScreen() {
+fun MemoriesScreen(navController: NavController, memoryViewModel: MemoryViewModel) {
     val db = FirebaseFirestore.getInstance()
     val auth = FirebaseAuth.getInstance()
     val userId = auth.currentUser?.uid ?: ""
@@ -45,9 +47,10 @@ fun MemoriesScreen() {
                         return@addSnapshotListener
                     }
                     if (snapshot != null) {
-                        // Sort in memory using DateTimeUtils for accurate ordering (Date + Time)
-                        memories = snapshot.toObjects(Memory::class.java)
-                            .sortedByDescending { DateTimeUtils.parseToMillis(it.date, it.time) }
+                        // Manually map document IDs to the id field of the Memory object
+                        memories = snapshot.documents.mapNotNull { document ->
+                            document.toObject(Memory::class.java)?.copy(id = document.id)
+                        }.sortedByDescending { DateTimeUtils.parseToMillis(it.date, it.time) }
                     }
                 }
         } else {
@@ -109,7 +112,19 @@ fun MemoriesScreen() {
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(memories) { memory ->
-                        MemoriesCard(memory)
+                        MemoriesCard(
+                            memory = memory,
+                            onEdit = {
+                                navController.navigate("add_memory?memoryId=${it.id}")
+                            },
+                            onDelete = {
+                                memoryViewModel.deleteMemory(it.id) { success ->
+                                    if (success) {
+                                        // The snapshot listener will handle the list update automatically
+                                    }
+                                }
+                            }
+                        )
                     }
                 }
             }

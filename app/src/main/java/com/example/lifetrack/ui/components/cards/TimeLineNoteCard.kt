@@ -53,7 +53,7 @@ fun TimeLineNoteCard(note: Note) {
             }
             Text(
                 text = note.title,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
 

@@ -8,7 +8,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -23,22 +25,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.viewModel.ProfileViewModel
-import org.tensorflow.lite.schema.Padding
 
 @Composable
 fun ProfileInfo(profileViewModel: ProfileViewModel = viewModel()) {
     val userProfile by profileViewModel.userProfile
     val isLoading by profileViewModel.isLoading
-    val message by profileViewModel.message
     
     var showEditDialog by remember { mutableStateOf(false) }
+    var isFullScreenVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Launcher to pick a profile image when the profile icon is clicked
+    // Launcher to pick a profile image
     val profileImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -62,39 +64,72 @@ fun ProfileInfo(profileViewModel: ProfileViewModel = viewModel()) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            // Left: Profile Image - Clickable to update image directly
+            // Left: Profile Image and Camera Action
             Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .shadow(10.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .clickable {
-                        profileImageLauncher.launch("image/*")
-                    },
-                contentAlignment = Alignment.Center
+                modifier = Modifier.size(120.dp),
+                contentAlignment = Alignment.BottomEnd
             ) {
-                if (userProfile?.profileImageUrl.isNullOrEmpty()) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Profile",
-                        modifier = Modifier.size(50.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                } else {
-                    AsyncImage(
-                        model = userProfile?.profileImageUrl,
-                        contentDescription = "Profile Image",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+                // Profile Image Circle with Designed Border
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .shadow(12.dp, CircleShape)
+                        .background(Color.White, CircleShape)
+                        .border(2.dp, DarkGreen, CircleShape) // Designed Border
+                        .padding(1.dp) // Gap between border and image
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .clickable {
+                            if (!userProfile?.profileImageUrl.isNullOrEmpty()) {
+                                isFullScreenVisible = true
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (userProfile?.profileImageUrl.isNullOrEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Profile",
+                            modifier = Modifier.size(50.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    } else {
+                        AsyncImage(
+                            model = userProfile?.profileImageUrl,
+                            contentDescription = "Profile Image",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(40.dp),
+                            color = DarkGreen,
+                            strokeWidth = 4.dp
+                        )
+                    }
                 }
-                
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(40.dp),
-                        color = DarkGreen,
-                        strokeWidth = 4.dp
+
+                // Camera indicator (Right Bottom)
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .offset(x = (-2).dp, y = (-2).dp)
+                        .shadow(4.dp, CircleShape)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .border(1.dp, DarkGreen, CircleShape)
+                        .clickable {
+                            profileImageLauncher.launch("image/*")
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
+                        contentDescription = "Change Image",
+                        modifier = Modifier.size(20.dp),
+                        tint = DarkGreen
                     )
                 }
             }
@@ -126,7 +161,7 @@ fun ProfileInfo(profileViewModel: ProfileViewModel = viewModel()) {
             }
 
 
-            //Edit Indicator
+            // Edit Info Indicator
             Box(
                 modifier = Modifier
                     .offset(y = (-12).dp)
@@ -141,13 +176,13 @@ fun ProfileInfo(profileViewModel: ProfileViewModel = viewModel()) {
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit",
+                    contentDescription = "Edit Profile Info",
                     tint = DarkGreen,
                     modifier = Modifier.size(18.dp)
                 )
             }
 
-            //Opening the Edit Dialog box When the click edit icon
+            // Opening the Edit Dialog box When the click edit icon
             if (showEditDialog) {
                 ShowEditDialog(
                     initialName = userProfile?.name ?: "",
@@ -160,6 +195,27 @@ fun ProfileInfo(profileViewModel: ProfileViewModel = viewModel()) {
                     onDismiss = {
                         showEditDialog = false
                     }
+                )
+            }
+        }
+    }
+
+    // Full View Dialog
+    if (isFullScreenVisible) {
+        Dialog(onDismissRequest = { isFullScreenVisible = false }) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .padding(16.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = Color.Black
+            ) {
+                AsyncImage(
+                    model = userProfile?.profileImageUrl,
+                    contentDescription = "Full Profile Image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
                 )
             }
         }

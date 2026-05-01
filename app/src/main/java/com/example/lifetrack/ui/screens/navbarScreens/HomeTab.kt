@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -23,40 +25,33 @@ fun HomeTab(navController: NavController, notificationViewModel: NotificationVie
         modifier = Modifier
             .fillMaxSize()
     ) {
-        // Top Header Section
-        TopHeader(
-            unreadCount = unreadCount,
-            onNotificationClick = {
-                navController.navigate("notification")
+        Box(
+            modifier = Modifier
+                .drawBehind {
+                    val strokeWidth = 1.dp.toPx()
+                    drawLine(
+                        color = Color.LightGray,
+                        start = Offset(0f, size.height),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = strokeWidth
+                    )
+                }
+        ) {
+            Column() {
+                // Top Header Section
+                TopHeader(
+                    unreadCount = unreadCount,
+                    onNotificationClick = {
+                        navController.navigate("notification")
+                    }
+                )
+
+                // Profile Section
+                ProfileInfo()
+
             }
-        )
-
-        // Profile Section
-        ProfileInfo()
-
-//        HorizontalDivider(
-//            modifier = Modifier.height(2.dp)
-//                .background(Color.LightGray)
-//        )
-//        Box(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(3.dp)
-//                .background(Color.Green) // your theme color
-//        )
-//        Box(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(3.dp)
-//                .background(Color.Green) // your theme color
-//        )
-//        Box(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(3.dp)
-//                .background(Color.Green) // your theme color
-//        )
-        // Upcomming reminder and memeories Time line
+        }
+        // Upcoming reminder and memories Time line
         TimeLineScreen()
     }
 }

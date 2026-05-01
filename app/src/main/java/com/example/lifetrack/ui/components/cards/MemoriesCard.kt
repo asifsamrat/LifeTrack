@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,7 +29,13 @@ import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.utils.ExpandableText
 
 @Composable
-fun MemoriesCard(memory: Memory) {
+fun MemoriesCard(
+    memory: Memory,
+    onEdit: (Memory) -> Unit,
+    onDelete: (Memory) -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -39,6 +46,41 @@ fun MemoriesCard(memory: Memory) {
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "${DateTimeUtils.formatForDisplay(memory.date)} at ${DateTimeUtils.formatTimeForDisplay(memory.time)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    modifier = Modifier.fillMaxWidth().padding(end = 32.dp),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.End
+                )
+                
+                Box(modifier = Modifier.align(Alignment.TopEnd)) {
+                    IconButton(onClick = { showMenu = true }, modifier = Modifier.size(24.dp)) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "More options", tint = DarkGreen)
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Edit") },
+                            onClick = {
+                                showMenu = false
+                                onEdit(memory)
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Delete", color = Color.Red) },
+                            onClick = {
+                                showMenu = false
+                                onDelete(memory)
+                            }
+                        )
+                    }
+                }
+            }
+
             // Videos Section
             if (memory.videoUrls.isNotEmpty()) {
                 Text(
@@ -77,14 +119,6 @@ fun MemoriesCard(memory: Memory) {
                 color = Color.LightGray,
                 thickness = 1.dp,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
-            )
-
-            Text(
-                text = "${DateTimeUtils.formatForDisplay(memory.date)} at ${DateTimeUtils.formatTimeForDisplay(memory.time)}",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = androidx.compose.ui.text.style.TextAlign.End
             )
             
             Text(

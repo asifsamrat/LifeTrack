@@ -43,7 +43,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
+fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel, memoryId: String? = null) {
 
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -68,6 +68,22 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
 
     val videoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
         selectedVideos = (selectedVideos + uris).distinct()
+    }
+
+    // Load memory if editing
+    LaunchedEffect(memoryId) {
+        if (memoryId != null) {
+            viewModel.getMemoryById(memoryId) { memory ->
+                if (memory != null) {
+                    title = memory.title
+                    description = memory.description
+                    date = memory.date
+                    time = memory.time
+                    selectedImages = memory.imageUrls.map { Uri.parse(it) }
+                    selectedVideos = memory.videoUrls.map { Uri.parse(it) }
+                }
+            }
+        }
     }
 
     LaunchedEffect(viewModel.isSuccess.value) {
@@ -135,7 +151,11 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
                             modifier = Modifier.size(60.dp).clip(shape = RoundedCornerShape(15.dp))
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Add Memory", fontWeight = FontWeight.Bold, color = DarkGreen)
+                        Text(
+                            text = if (memoryId == null) "Add Memory" else "Edit Memory",
+                            fontWeight = FontWeight.Bold, 
+                            color = DarkGreen
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = white)
@@ -243,7 +263,8 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
                             time = time,
                             images = selectedImages,
                             videos = selectedVideos,
-                            userId = userId
+                            userId = userId,
+                            id = memoryId ?: ""
                         )
                     } else {
                         Toast.makeText(context, "Title, Date and Time are required", Toast.LENGTH_SHORT).show()
@@ -257,7 +278,12 @@ fun AddMemoryScreen(navController: NavController, viewModel: MemoryViewModel) {
                 if (viewModel.isSaving.value) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                 } else {
-                    Text("Save Memory", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(
+                        text = if (memoryId == null) "Save Memory" else "Update Memory",
+                        fontSize = 18.sp, 
+                        fontWeight = FontWeight.Bold, 
+                        color = Color.White
+                    )
                 }
             }
         }

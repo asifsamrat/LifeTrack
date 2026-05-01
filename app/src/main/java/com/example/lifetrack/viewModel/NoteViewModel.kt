@@ -13,11 +13,23 @@ class NoteViewModel : ViewModel() {
     var isSuccess = mutableStateOf(false)
         private  set
 
-    //Saving note to the firebase
+    //Saving or updating note to the firebase
     fun saveNote(note: Note) {
         noteRepository.saveNote(note) { success, msg ->
             message.value = msg
             isSuccess.value = success
+        }
+    }
+
+    //Delete Note
+    fun deleteNote(noteId: String, onComplete: (Boolean) -> Unit = {}) {
+        noteRepository.deleteNote(noteId) { success ->
+            if (success) {
+                message.value = "Note deleted successfully"
+            } else {
+                message.value = "Failed to delete note"
+            }
+            onComplete(success)
         }
     }
 
@@ -26,5 +38,16 @@ class NoteViewModel : ViewModel() {
         noteRepository.getNotesByType(userId, noteType) { notes ->
             onResult(notes)
         }
+    }
+
+    fun getNoteById(noteId: String, onResult: (Note?) -> Unit) {
+        noteRepository.getNoteById(noteId) { note ->
+            onResult(note)
+        }
+    }
+
+    fun resetState() {
+        message.value = ""
+        isSuccess.value = false
     }
 }

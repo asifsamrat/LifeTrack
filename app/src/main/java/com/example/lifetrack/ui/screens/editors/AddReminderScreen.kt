@@ -39,7 +39,8 @@ import com.google.firebase.auth.FirebaseAuth
 fun AddReminderScreen(
     initialReminderType: String,
     navController: NavController,
-    viewModel: ReminderViewModel
+    viewModel: ReminderViewModel,
+    reminderId: String? = null
 ) {
     var title by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") } // Stores yyyy-MM-dd
@@ -64,6 +65,22 @@ fun AddReminderScreen(
     // Determine the type for display and storage
     val displayType = if (initialReminderType.contains("Special")) "Special Day" else "Event"
     val storedReminderType = if (initialReminderType.contains("Special")) "Special" else "Event"
+
+    // Load existing reminder if editing
+    LaunchedEffect(reminderId) {
+        if (reminderId != null) {
+            viewModel.getReminderById(reminderId) { reminder ->
+                if (reminder != null) {
+                    title = reminder.title
+                    date = reminder.date
+                    time = reminder.time
+                    remindDays = reminder.remindDays.toString()
+                    remindHours = reminder.remindHours.toString()
+                    remindMinutes = reminder.remindMinutes.toString()
+                }
+            }
+        }
+    }
 
     LaunchedEffect(success) {
         if (success) {
@@ -130,7 +147,11 @@ fun AddReminderScreen(
                             modifier = Modifier.size(60.dp).clip(shape = RoundedCornerShape(15.dp))
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Add New $displayType", fontWeight = FontWeight.Bold, color = DarkGreen)
+                        Text(
+                            text = if (reminderId == null) "Add New $displayType" else "Edit $displayType",
+                            fontWeight = FontWeight.Bold, 
+                            color = DarkGreen
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = white)
@@ -257,6 +278,7 @@ fun AddReminderScreen(
                 onClick = {
                     if (title.isNotEmpty() && date.isNotEmpty() && time.isNotEmpty() && userId.isNotEmpty()) {
                         val reminder = Reminder(
+                            id = reminderId ?: "",
                             reminderType = storedReminderType,
                             title = title,
                             date = date,
@@ -280,7 +302,12 @@ fun AddReminderScreen(
                 if (viewModel.isSaving.value) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                 } else {
-                    Text("Save Reminder", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(
+                        text = if (reminderId == null) "Save Reminder" else "Update Reminder", 
+                        fontSize = 16.sp, 
+                        fontWeight = FontWeight.Bold, 
+                        color = Color.White
+                    )
                 }
             }
         }

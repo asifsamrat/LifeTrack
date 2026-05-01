@@ -23,6 +23,7 @@ import com.example.lifetrack.navigation.BottomNavItem
 import com.example.lifetrack.ui.screens.NotificationScreen
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.GreenLight
+import com.example.lifetrack.viewModel.MemoryViewModel
 import com.example.lifetrack.viewModel.NoteViewModel
 import com.example.lifetrack.viewModel.NotificationViewModel
 import com.example.lifetrack.viewModel.ReminderViewModel
@@ -116,7 +117,7 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
                         },
                         onClick = {
                             showMenu = false
-                            rootNavController.navigate("add_note")
+                            rootNavController.navigate("add_note?noteType=Daily Note")
                         }
                     )
                     DropdownMenuItem(
@@ -128,7 +129,7 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
                         },
                         onClick = {
                             showMenu = false
-                            rootNavController.navigate("add_special_note")
+                            rootNavController.navigate("add_note?noteType=Special Note")
                         }
                     )
                     DropdownMenuItem(
@@ -140,7 +141,7 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
                         },
                         onClick = {
                             showMenu = false
-                            rootNavController.navigate("add_reminder/Special Day Reminder")
+                            rootNavController.navigate("add_reminder?reminderType=Special")
                         }
                     )
                     DropdownMenuItem(
@@ -152,7 +153,7 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
                         },
                         onClick = {
                             showMenu = false
-                            rootNavController.navigate("add_reminder/Event Reminder")
+                            rootNavController.navigate("add_reminder?reminderType=Event")
                         }
                     )
                     DropdownMenuItem(
@@ -195,7 +196,8 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
                 ReminderScreen(rootNavController, reminderViewModel)
             }
             composable(BottomNavItem.Memories.route) {
-                MemoriesScreen()
+                val memoryViewModel: MemoryViewModel = viewModel()
+                MemoriesScreen(rootNavController, memoryViewModel)
             }
         }
     }
