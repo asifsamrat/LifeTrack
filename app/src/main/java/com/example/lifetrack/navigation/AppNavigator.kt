@@ -37,6 +37,7 @@ fun AppNavigator() {
     val notificationViewModel: NotificationViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
 
+    // Determine the start destination based on authentication status
     val startDestination = if (authViewModel.isUserLoggedIn()) Routes.HOME else Routes.LOGIN
 
     NavHost(

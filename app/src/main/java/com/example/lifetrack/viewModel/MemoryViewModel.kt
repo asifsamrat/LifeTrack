@@ -70,25 +70,56 @@ class MemoryViewModel : ViewModel() {
         }
 
         isSaving.value = true
+        
+        // Generate a new ID if it's a new memory
+        val memoryId = if (id.isEmpty()) db.collection("memories").document().id else id
 
+        // Convert Uris to strings. These might be local content:// uris initially.
+        val currentImageUrls = images.map { it.toString() }
+        val currentVideoUrls = videos.map { it.toString() }
+
+        val initialMemory = Memory(
+            id = memoryId,
+            title = title,
+            description = description,
+            date = date,
+            time = time,
+            imageUrls = currentImageUrls,
+            videoUrls = currentVideoUrls,
+            userId = userId
+        )
+
+        // 1. Save locally to Firestore immediately (Offline support)
+        repository.saveMemory(initialMemory) { success ->
+            if (success) {
+                isSuccess.value = true
+                message.value = "Memory Saved Locally!"
+                
+                // 2. Trigger background upload
+                startBackgroundUpload(images, videos, initialMemory)
+            } else {
+                isSaving.value = false
+                isSuccess.value = false
+                message.value = "Failed to save"
+            }
+        }
+    }
+
+    private fun startBackgroundUpload(images: List<Uri>, videos: List<Uri>, memory: Memory) {
         uploadMultipleToCloudinary(images, "image") { imageUrls ->
             uploadMultipleToCloudinary(videos, "video") { videoUrls ->
-
-                val memory = Memory(
-                    id = id,
-                    title = title,
-                    description = description,
-                    date = date,
-                    time = time,
-                    imageUrls = imageUrls,
-                    videoUrls = videoUrls,
-                    userId = userId
-                )
-
-                repository.saveMemory(memory) { success ->
+                
+                // If any URLs changed (meaning uploads completed), update Firestore
+                if (imageUrls != memory.imageUrls || videoUrls != memory.videoUrls) {
+                    val updatedMemory = memory.copy(
+                        imageUrls = imageUrls,
+                        videoUrls = videoUrls
+                    )
+                    repository.saveMemory(updatedMemory) { 
+                        isSaving.value = false
+                    }
+                } else {
                     isSaving.value = false
-                    isSuccess.value = success
-                    message.value = if (success) "Memory Saved!" else "Failed to save"
                 }
             }
         }
@@ -111,11 +142,13 @@ class MemoryViewModel : ViewModel() {
         var processedCount = 0
 
         uris.forEach { uri ->
-            if (uri.toString().startsWith("http")) {
-                urls.add(uri.toString())
+            val uriString = uri.toString()
+            if (uriString.startsWith("http")) {
+                urls.add(uriString)
                 processedCount++
                 if (processedCount == uris.size) onComplete(urls)
             } else {
+                // Background upload via Cloudinary MediaManager
                 MediaManager.get().upload(uri)
                     .option("resource_type", resourceType)
                     .unsigned("lifetrack_upload")
@@ -124,11 +157,11 @@ class MemoryViewModel : ViewModel() {
                         override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
                         override fun onSuccess(requestId: String?, resultData: Map<*, *>?) {
                             val url = resultData?.get("secure_url") as? String
-                            if (url != null) urls.add(url)
+                            if (url != null) urls.add(url) else urls.add(uriString)
                             checkCompletion()
                         }
                         override fun onError(requestId: String?, error: ErrorInfo?) {
-                            android.util.Log.e("CloudinaryUpload", "Error uploading $resourceType: ${error?.description}")
+                            urls.add(uriString) // Keep local URI on error
                             checkCompletion()
                         }
                         override fun onReschedule(requestId: String?, error: ErrorInfo?) {

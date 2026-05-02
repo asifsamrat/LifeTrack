@@ -56,6 +56,13 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
 
     var showMenu by remember { mutableStateOf(false) }
 
+    val onSignOut = {
+        authViewModel.logout()
+        rootNavController.navigate(Routes.LOGIN) {
+            popUpTo(Routes.HOME) { inclusive = true }
+        }
+    }
+
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         containerColor = Color.White,
@@ -204,12 +211,7 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
                     noteViewModel = noteViewModel,
                     reminderViewModel = reminderViewModel,
                     memoryViewModel = memoryViewModel,
-                    onSignOut = {
-                        authViewModel.logout()
-                        rootNavController.navigate(Routes.LOGIN) {
-                            popUpTo(Routes.HOME) { inclusive = true }
-                        }
-                    }
+                    onSignOut = onSignOut
                 )
             }
 
@@ -220,7 +222,12 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
                 )
             }
             composable(BottomNavItem.Notes.route) {
-                NotesScreen(rootNavController, noteViewModel)
+                NotesScreen(
+                    rootNavController = rootNavController, 
+                    noteViewModel = noteViewModel,
+                    notificationViewModel = notificationViewModel,
+                    onSignOut = onSignOut
+                )
             }
             composable(BottomNavItem.Reminder.route) {
                 ReminderScreen(rootNavController, reminderViewModel)

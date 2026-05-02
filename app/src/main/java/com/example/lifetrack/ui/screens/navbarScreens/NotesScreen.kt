@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,11 +29,18 @@ import com.example.lifetrack.ui.theme.GreenLight
 import com.example.lifetrack.ui.theme.white
 import com.example.lifetrack.utils.DateTimeUtils
 import com.example.lifetrack.viewModel.NoteViewModel
+import com.example.lifetrack.viewModel.NotificationViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotesScreen(rootNavController: NavController, noteViewModel: NoteViewModel) {
+fun NotesScreen(
+    rootNavController: NavController, 
+    noteViewModel: NoteViewModel,
+    notificationViewModel: NotificationViewModel,
+    onSignOut: () -> Unit
+) {
     var selectedTab by remember { mutableStateOf("Daily Note") }
+    val unreadCount = notificationViewModel.unreadCount
     
     // Get the cached list of notes from the ViewModel
     val allNotes by noteViewModel.notes
@@ -61,6 +71,27 @@ fun NotesScreen(rootNavController: NavController, noteViewModel: NoteViewModel) 
                             fontWeight = FontWeight.Bold,
                             color = DarkGreen
                         )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { rootNavController.navigate("notification") }) {
+                        BadgedBox(
+                            badge = {
+                                if (unreadCount > 0) {
+                                    Badge(
+                                        containerColor = Color.Red,
+                                        contentColor = Color.White
+                                    ) {
+                                        Text(unreadCount.toString(), fontSize = 10.sp)
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.Notifications, "Notifications", tint = DarkGreen)
+                        }
+                    }
+                    IconButton(onClick = onSignOut) {
+                        Icon(Icons.AutoMirrored.Filled.Logout, "Sign Out", tint = DarkGreen)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
