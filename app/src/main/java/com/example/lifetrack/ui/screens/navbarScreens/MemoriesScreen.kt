@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.lifetrack.R
+import com.example.lifetrack.data.model.Memory
 import com.example.lifetrack.ui.components.cards.MemoriesCard
 import com.example.lifetrack.ui.theme.DarkGreen
 import com.example.lifetrack.ui.theme.white
@@ -29,9 +30,11 @@ fun MemoriesScreen(navController: NavController, memoryViewModel: MemoryViewMode
     // Use cached memories from ViewModel
     val allMemories by memoryViewModel.memories
     
-    // Sort memories locally
+    // Sort memories by nearest future occurrence (circular yearly)
     val sortedMemories = remember(allMemories) {
-        allMemories.sortedByDescending { DateTimeUtils.parseToMillis(it.date, it.time) }
+        allMemories.sortedBy { memory ->
+            DateTimeUtils.getNextOccurrence(memory.date, memory.time)
+        }
     }
 
     Scaffold(

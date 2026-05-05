@@ -73,27 +73,6 @@ fun NotesScreen(
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = { rootNavController.navigate("notification") }) {
-                        BadgedBox(
-                            badge = {
-                                if (unreadCount > 0) {
-                                    Badge(
-                                        containerColor = Color.Red,
-                                        contentColor = Color.White
-                                    ) {
-                                        Text(unreadCount.toString(), fontSize = 10.sp)
-                                    }
-                                }
-                            }
-                        ) {
-                            Icon(Icons.Default.Notifications, "Notifications", tint = DarkGreen)
-                        }
-                    }
-                    IconButton(onClick = onSignOut) {
-                        Icon(Icons.AutoMirrored.Filled.Logout, "Sign Out", tint = DarkGreen)
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = white
                 )

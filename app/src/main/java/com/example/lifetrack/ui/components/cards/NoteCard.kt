@@ -1,5 +1,6 @@
 package com.example.lifetrack.ui.components.cards
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -49,23 +50,39 @@ fun NoteCard(
                     textAlign = TextAlign.End
                 )
                 
-                Box(modifier = Modifier.align(Alignment.TopEnd)) {
-                    IconButton(onClick = { showMenu = true }, modifier = Modifier.size(24.dp)) {
+                Box(
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    IconButton(
+                        onClick = {
+                            showMenu = true
+                        },
+                        modifier = Modifier.size(24.dp)
+                    ) {
                         Icon(Icons.Default.MoreVert, contentDescription = "More options", tint = DarkGreen)
                     }
                     DropdownMenu(
                         expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
+                        onDismissRequest = {
+                            showMenu = false
+                        },
+                        modifier = Modifier.background(
+                            color = white,
+                        )
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Edit") },
+                            text = {
+                                Text("Edit", color = DarkGreen)
+                           },
                             onClick = {
                                 showMenu = false
                                 onEdit(note)
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Delete", color = Color.Red) },
+                            text = {
+                                Text("Delete", color = Color.Red)
+                            },
                             onClick = {
                                 showMenu = false
                                 onDelete(note)

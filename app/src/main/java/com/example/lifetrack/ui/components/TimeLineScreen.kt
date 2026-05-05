@@ -29,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.lifetrack.data.model.Memory
+import com.example.lifetrack.data.model.Reminder
 import com.example.lifetrack.ui.components.cards.TimeLineMemoriesCard
 import com.example.lifetrack.ui.components.cards.TimeLineNoteCard
 import com.example.lifetrack.ui.components.cards.TimeLineReminderCard
@@ -54,16 +56,24 @@ fun TimeLineScreen(
     val now = System.currentTimeMillis()
 
     val upcomingReminders = remember(allReminders) {
-        allReminders
-            .filter { DateTimeUtils.parseToMillis(it.date, it.time) >= now }
-            .sortedBy { DateTimeUtils.parseToMillis(it.date, it.time) }
+        allReminders.map { reminder ->
+            val targetTime = if (reminder.reminderType == "Special") {
+                DateTimeUtils.getNextOccurrence(reminder.date, reminder.time)
+            } else {
+                DateTimeUtils.parseToMillis(reminder.date, reminder.time)
+            }
+            reminder to targetTime
+        }
+        .filter { it.second >= now }
+        .sortedBy { it.second }
+        .map { it.first }
+        .take(5)
     }
 
     val upcomingMemories = remember(allMemories) {
-        allMemories
-            .filter { DateTimeUtils.parseToMillis(it.date, it.time) >= now }
-            .sortedBy { DateTimeUtils.parseToMillis(it.date, it.time) }
-            .take(3)
+        allMemories.sortedBy { 
+            DateTimeUtils.getNextOccurrence(it.date, it.time)
+        }.take(5)
     }
 
     val recentNotes = remember(allNotes) {

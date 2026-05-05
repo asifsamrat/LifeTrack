@@ -4,6 +4,8 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,7 +18,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -50,6 +54,12 @@ fun AddNoteScreen(
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
+
+    // For Button interaction and changing color
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val buttonBgColor = if (isPressed) GreenLime else DarkGreen
+    val buttonTextColor = if (isPressed) Color.White else Color.White
 
     // Load existing note if editing
     LaunchedEffect(noteId) {
@@ -200,10 +210,33 @@ fun AddNoteScreen(
                 }
             }
 
+            if (message != "" && !success) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = " *",
+                        color = Color.Red
+                    )
+
+                    Text(
+                        text = message,
+                        textAlign = TextAlign.Start,
+                        fontStyle = FontStyle.Italic,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.sp,
+                        color = Color.Red
+                    )
+                }
+            }
+
             Button(
                 onClick = {
                     if (title.isBlank() || description.isBlank() || date.isBlank()) {
-                        Toast.makeText(context, "All fields are required", Toast.LENGTH_SHORT).show()
+                        noteViewModel.message.value = "Please fill in all fields."
                         return@Button
                     }
                     val note = Note(
@@ -214,21 +247,22 @@ fun AddNoteScreen(
                         date = date,
                         userId = userId
                     )
-                    noteViewModel.saveNote(note)
+                    noteViewModel.saveOrupdateNote(note)
                 },
+                interactionSource = interactionSource,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = DarkGreen
+                    containerColor = buttonBgColor
                 )
             ) {
                 Text(
                     text = if (noteId == null) "Save Note" else "Update Note",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = buttonTextColor
                 )
             }
         }

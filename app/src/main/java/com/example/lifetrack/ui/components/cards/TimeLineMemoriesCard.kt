@@ -15,6 +15,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +31,9 @@ import com.example.lifetrack.utils.DateTimeUtils
 
 @Composable
 fun TimeLineMemoriesCard(memory: Memory) {
+    val nextOccur = remember(memory) { DateTimeUtils.getNextOccurrence(memory.date, memory.time) }
+    val displayDate = remember(nextOccur) { DateTimeUtils.getStorageDate(nextOccur) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -51,16 +55,15 @@ fun TimeLineMemoriesCard(memory: Memory) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // Use standardized display format
                 Text(
-                    text = "Date: ${DateTimeUtils.formatForDisplay(memory.date)}",
+                    text = "Next Anniversary: ${DateTimeUtils.formatForDisplay(displayDate)}",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = GreenLime
                 )
 
                 Text(
-                    text = "A beautiful memory captured",
+                    text = "A beautiful memory repeating yearly",
                     fontSize = 11.sp,
                     color = Color.Gray
                 )

@@ -1,5 +1,6 @@
 package com.example.lifetrack.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,6 +9,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsNone
@@ -78,6 +81,30 @@ fun NotificationScreen(
                         )
                     }
                 },
+                actions = {
+                    if (expiredItems.isNotEmpty()) {
+                        OutlinedButton(
+                            onClick = { viewModel.clearAllNotifications() },
+                            modifier = Modifier.padding(end = 8.dp),
+                            border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.5f)),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DeleteSweep,
+                                contentDescription = null,
+                                tint = Color.Red,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = "Clear All",
+                                color = Color.Red,
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = white
                 )
@@ -94,7 +121,7 @@ fun NotificationScreen(
                 EmptyState()
             } else {
                 Text(
-                    text = "Expired Reminders & Memories",
+                    text = "Expired Reminders & Passed Memories",
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
@@ -105,7 +132,10 @@ fun NotificationScreen(
                     contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
                     items(expiredItems) { item ->
-                        NotificationItemUI(item)
+                        NotificationItemUI(
+                            item = item,
+                            onDelete = { viewModel.deleteNotification(item) }
+                        )
                     }
                 }
             }
@@ -118,7 +148,10 @@ fun NotificationScreen(
 // 🔹 Notification Item UI
 // ---------------------------
 @Composable
-fun NotificationItemUI(item: NotificationItem) {
+fun NotificationItemUI(
+    item: NotificationItem,
+    onDelete: () -> Unit
+) {
     val icon = when (item.type.lowercase()) {
         "reminder" -> Icons.Default.Timer
         "memory" -> Icons.Default.PhotoLibrary
@@ -152,10 +185,13 @@ fun NotificationItemUI(item: NotificationItem) {
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(15.dp)
         ) {
             Box(
                 modifier = Modifier
+                    .weight(0.175f)
+                    .aspectRatio(1f)
                     .size(48.dp)
                     .clip(CircleShape)
                     .background(iconBackground),
@@ -169,56 +205,49 @@ fun NotificationItemUI(item: NotificationItem) {
                 )
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Column(
+                modifier = Modifier.weight(0.6f)
+            ) {
+                // Showing the type of notification
+                Text(
+                    text = item.type.replaceFirstChar { it.uppercase() },
+                    fontSize = 12.sp,
+                    color = DarkGreen,
+                    fontWeight = FontWeight.Medium
+                )
 
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = item.title,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                    Text(
-                        text = "EXPIRED",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.Red,
-                        modifier = Modifier
-                            .background(Color(0xFFFFEBEE), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
-                    )
-                }
+                // Showing the title of the notification
+                Text(
+                    text = item.title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                // Showing the date and time of the notification
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = item.type.replaceFirstChar { it.uppercase() },
-                        fontSize = 12.sp,
-                        color = DarkGreen,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = " • ",
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
-                    
-                    // FIXED: Now showing the actual date and time stored in the timestamp
-                    val dateStr = DateTimeUtils.getStorageDate(item.timestamp)
-                    val timeStr = java.text.SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(item.timestamp))
-                    
-                    Text(
-                        text = "${DateTimeUtils.formatForDisplay(dateStr)} at ${DateTimeUtils.formatTimeForDisplay(timeStr)}",
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                }
+                val dateStr = DateTimeUtils.getStorageDate(item.timestamp)
+                val timeStr = java.text.SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(item.timestamp))
+
+                Text(
+                    text = "${DateTimeUtils.formatForDisplay(dateStr)} at ${DateTimeUtils.formatTimeForDisplay(timeStr)}",
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
+
+            OutlinedButton(
+                onClick = onDelete,
+                modifier = Modifier.weight(0.225f),
+                border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.5f)),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(horizontal = 6.dp)
+            ) {
+                Text(
+                    text = "Remove",
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
             }
         }
     }

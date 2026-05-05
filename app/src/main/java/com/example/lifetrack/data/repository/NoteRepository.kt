@@ -8,13 +8,25 @@ class NoteRepository{
     private val noteCollection = db.collection("notes")
 
     //Saving or Updating note
-    fun saveNote(note: Note, onResult: (Boolean, String) -> Unit) {
-        val id = if (note.id.isEmpty()) noteCollection.document().id else note.id
+    fun saveOrupdateNote(note: Note, onResult: (Boolean, String) -> Unit) {
+        var isUpdate = false
+        val id = if (note.id.isEmpty()) {
+            noteCollection.document().id
+        } else {
+            isUpdate = true
+            note.id
+        }
         val finalNote = note.copy(id = id)
-        
+
         noteCollection.document(id).set(finalNote)
-            .addOnSuccessListener { onResult(true, "Note saved successfully") }
-            .addOnFailureListener { onResult(false, "Error! saving note") }
+            .addOnSuccessListener {
+                onResult(true,
+                    if (isUpdate) "Note updated successfully" else "Note saved successfully")
+            }
+            .addOnFailureListener {
+                onResult(false,
+                    if (isUpdate) "Failed to update note" else "Failed to saving note")
+            }
     }
 
     //Delete Note

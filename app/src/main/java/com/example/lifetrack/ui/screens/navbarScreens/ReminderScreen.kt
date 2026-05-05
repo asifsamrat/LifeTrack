@@ -1,10 +1,5 @@
 package com.example.lifetrack.ui.screens.navbarScreens
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,11 +11,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -47,15 +42,18 @@ fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel) {
 
     val reminderList = remember(allReminders, selectedTab) {
         val now = System.currentTimeMillis()
-        allReminders
-            .filter { it.reminderType == selectedTab }
-            .filter { reminder ->
-                val timestamp = DateTimeUtils.parseToMillis(reminder.date, reminder.time)
-                timestamp >= now // Only non-expired
-            }
-            .sortedBy { reminder ->
-                DateTimeUtils.parseToMillis(reminder.date, reminder.time) // Sorted order
-            }
+        if (selectedTab == "Event") {
+            // One-time events: Filter future only, sort by actual date
+            allReminders
+                .filter { it.reminderType == "Event" }
+                .filter { DateTimeUtils.parseToMillis(it.date, it.time) >= now }
+                .sortedBy { DateTimeUtils.parseToMillis(it.date, it.time) }
+        } else {
+            // Special Day Reminders: Circular (yearly), sort by nearest future occurrence
+            allReminders
+                .filter { it.reminderType == "Special" }
+                .sortedBy { DateTimeUtils.getNextOccurrence(it.date, it.time) }
+        }
     }
 
     Scaffold(
@@ -184,23 +182,6 @@ fun EventReminderItem(
     onDelete: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    val infiniteTransition = rememberInfiniteTransition(label = "pulsing")
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 0.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha"
-    )
-
-    val color = when(reminder.indicatorColor) {
-        "Red" -> Color.Red
-        "Yellow" -> Color.Yellow
-        "Blue" -> Color.Blue
-        else -> Color.Green
-    }
 
     Card(
         modifier = Modifier
@@ -209,68 +190,69 @@ fun EventReminderItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = white)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(end = 32.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = reminder.title,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkGreen
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .size(16.dp)
-                            .then(if (reminder.indicatorColor == "Red") Modifier.alpha(alpha) else Modifier)
-                            .background(color = color, shape = CircleShape)
-                    )
-                }
-                
-                Box(modifier = Modifier.align(Alignment.TopEnd)) {
-                    IconButton(onClick = { showMenu = true }, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More options", tint = DarkGreen)
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Edit") },
-                            onClick = {
-                                showMenu = false
-                                onEdit()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Delete", color = Color.Red) },
-                            onClick = {
-                                showMenu = false
-                                onDelete()
-                            }
-                        )
-                    }
-                }
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(15.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFE3F2FD)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Timer,
+                    contentDescription = reminder.reminderType,
+                    tint = Color(0xFF2196F3),
+                    modifier = Modifier.size(24.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "${DateTimeUtils.formatForDisplay(reminder.date)} at ${DateTimeUtils.formatTimeForDisplay(reminder.time)}",
-                fontSize = 14.sp,
-                color = GreenLime
-            )
-            
-            if (reminder.remindDays > 0 || reminder.remindHours > 0 || reminder.remindMinutes > 0) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
-                    text = "Remind me: ${reminder.remindDays}d ${reminder.remindHours}h ${reminder.remindMinutes}m before",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 2.dp)
+                    text = reminder.title,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = DarkGreen
                 )
+
+                Text(
+                    text = "${DateTimeUtils.formatForDisplay(reminder.date)} at ${DateTimeUtils.formatTimeForDisplay(reminder.time)}",
+                    fontSize = 14.sp,
+                    color = GreenLime
+                )
+            }
+
+            Box(contentAlignment = Alignment.TopEnd) {
+                IconButton(onClick = { showMenu = true }, modifier = Modifier.size(24.dp)) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More options", tint = DarkGreen)
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                    modifier = Modifier.background(color = white)
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Edit", color = DarkGreen) },
+                        onClick = {
+                            showMenu = false
+                            onEdit()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete", color = Color.Red) },
+                        onClick = {
+                            showMenu = false
+                            onDelete()
+                        }
+                    )
+                }
             }
         }
     }
@@ -283,6 +265,10 @@ fun SpecialDayReminderItem(
     onDelete: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    
+    val nextOccur = remember(reminder) { DateTimeUtils.getNextOccurrence(reminder.date, reminder.time) }
+    val displayDate = remember(nextOccur) { DateTimeUtils.getStorageDate(nextOccur) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -290,68 +276,75 @@ fun SpecialDayReminderItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = white)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(end = 32.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = reminder.title,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkGreen
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.Default.Cake,
-                        contentDescription = "Birthday Icon",
-                        tint = DarkGreen,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                
-                Box(modifier = Modifier.align(Alignment.TopEnd)) {
-                    IconButton(onClick = { showMenu = true }, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More options", tint = DarkGreen)
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Edit") },
-                            onClick = {
-                                showMenu = false
-                                onEdit()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Delete", color = Color.Red) },
-                            onClick = {
-                                showMenu = false
-                                onDelete()
-                            }
-                        )
-                    }
-                }
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(15.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF3E5F5)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Cake,
+                    contentDescription = reminder.reminderType,
+                    tint = Color(0xFF9C27B0),
+                    modifier = Modifier.size(24.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = DateTimeUtils.formatForDisplay(reminder.date),
-                fontSize = 14.sp,
-                color = GreenLime
-            )
-            
-            if (reminder.remindDays > 0 || reminder.remindHours > 0 || reminder.remindMinutes > 0) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
-                    text = "Remind me: ${reminder.remindDays}d ${reminder.remindHours}h ${reminder.remindMinutes}m before",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 2.dp)
+                    text = reminder.title,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = DarkGreen
                 )
+
+                Text(
+                    text = "Next: ${DateTimeUtils.formatForDisplay(displayDate)} at ${DateTimeUtils.formatTimeForDisplay(reminder.time)}",
+                    fontSize = 14.sp,
+                    color = GreenLime
+                )
+                
+                Text(
+                    text = "Yearly Circular Reminder",
+                    fontSize = 11.sp,
+                    color = Color.Gray
+                )
+            }
+
+            Box(contentAlignment = Alignment.TopEnd) {
+                IconButton(onClick = { showMenu = true }, modifier = Modifier.size(24.dp)) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More options", tint = DarkGreen)
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                    modifier = Modifier.background(color = white)
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Edit", color = DarkGreen) },
+                        onClick = {
+                            showMenu = false
+                            onEdit()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete", color = Color.Red) },
+                        onClick = {
+                            showMenu = false
+                            onDelete()
+                        }
+                    )
+                }
             }
         }
     }

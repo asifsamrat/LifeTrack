@@ -41,8 +41,9 @@ class NoteViewModel : ViewModel() {
         notesListener?.remove()
     }
 
-    fun saveNote(note: Note) {
-        noteRepository.saveNote(note) { success, msg ->
+    //Saving or Updating Note
+    fun saveOrupdateNote(note: Note) {
+        noteRepository.saveOrupdateNote(note) { success, msg ->
             message.value = msg
             isSuccess.value = success
         }

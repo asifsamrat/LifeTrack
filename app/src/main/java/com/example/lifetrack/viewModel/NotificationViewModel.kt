@@ -25,6 +25,9 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
     private var reminderListener: ListenerRegistration? = null
     private var memoryListener: ListenerRegistration? = null
 
+    private var cachedReminders = listOf<Reminder>()
+    private var cachedMemories = listOf<Memory>()
+
     init {
         startListening()
     }
@@ -37,7 +40,6 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
         
         val lastRead = prefs.getLong("last_read_$userId", -1L)
         if (lastRead == -1L) {
-            // New login: set last read to now so they don't see old history as unread
             val now = System.currentTimeMillis()
             prefs.edit().putLong("last_read_$userId", now).apply()
             return now
@@ -52,11 +54,23 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
+    private fun getDismissedIds(): Set<String> {
+        val userId = getUserId()
+        if (userId.isEmpty()) return emptySet()
+        return prefs.getStringSet("dismissed_ids_$userId", emptySet()) ?: emptySet()
+    }
+
+    private fun saveDismissedIds(ids: Set<String>) {
+        val userId = getUserId()
+        if (userId.isNotEmpty()) {
+            prefs.edit().putStringSet("dismissed_ids_$userId", ids).apply()
+        }
+    }
+
     fun startListening() {
         val userId = getUserId()
         if (userId.isEmpty()) return
 
-        // Clean up existing listeners
         stopListening()
 
         // Listen for Reminders
@@ -76,26 +90,29 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
             }
     }
 
-    private var cachedReminders = listOf<Reminder>()
-    private var cachedMemories = listOf<Memory>()
-
     @Synchronized
     private fun updateList(reminders: List<Reminder>?, memories: List<Memory>?) {
         if (reminders != null) cachedReminders = reminders
         if (memories != null) cachedMemories = memories
 
         val lastRead = getLastReadTimestamp()
+        val dismissedIds = getDismissedIds()
         val newList = mutableListOf<NotificationItem>()
         val now = System.currentTimeMillis()
 
         cachedReminders.forEach { reminder ->
-            val timestamp = DateTimeUtils.parseToMillis(reminder.date, reminder.time)
-            if (timestamp > 0 && timestamp < now) {
+            val timestamp = if (reminder.reminderType == "Special") {
+                DateTimeUtils.getAnniversaryThisYear(reminder.date, reminder.time)
+            } else {
+                DateTimeUtils.parseToMillis(reminder.date, reminder.time)
+            }
+
+            if (timestamp > 0 && timestamp < now && !dismissedIds.contains(reminder.id)) {
                 newList.add(
                     NotificationItem(
                         id = reminder.id,
                         title = reminder.title,
-                        type = "reminder",
+                        type = reminder.reminderType.lowercase(),
                         timestamp = timestamp,
                         isRead = timestamp <= lastRead
                     )
@@ -104,11 +121,14 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
         }
 
         cachedMemories.forEach { memory ->
-            val timestamp = DateTimeUtils.parseToMillis(memory.date, memory.time)
-            if (timestamp > 0 && timestamp < now) {
+            // Memories are circular/anniversaries
+            val timestamp = DateTimeUtils.getAnniversaryThisYear(memory.date, memory.time)
+            val notificationId = if (memory.id.isNotEmpty()) memory.id else memory.title + memory.date
+            
+            if (timestamp > 0 && timestamp < now && !dismissedIds.contains(notificationId)) {
                 newList.add(
                     NotificationItem(
-                        id = memory.title + memory.date,
+                        id = notificationId,
                         title = memory.title,
                         type = "memory",
                         timestamp = timestamp,
@@ -130,12 +150,25 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
         val now = System.currentTimeMillis()
         setLastReadTimestamp(now)
         
-        // Update local state to reflect badge change immediately
         _notifications.forEachIndexed { index, item ->
             if (!item.isRead) {
                 _notifications[index] = item.copy(isRead = true)
             }
         }
+    }
+
+    fun deleteNotification(item: NotificationItem) {
+        val dismissed = getDismissedIds().toMutableSet()
+        dismissed.add(item.id)
+        saveDismissedIds(dismissed)
+        _notifications.removeIf { it.id == item.id }
+    }
+
+    fun clearAllNotifications() {
+        val dismissed = getDismissedIds().toMutableSet()
+        _notifications.forEach { dismissed.add(it.id) }
+        saveDismissedIds(dismissed)
+        _notifications.clear()
     }
 
     fun stopListening() {
