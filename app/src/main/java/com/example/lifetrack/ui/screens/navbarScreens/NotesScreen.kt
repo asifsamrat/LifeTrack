@@ -35,12 +35,9 @@ import com.example.lifetrack.viewModel.NotificationViewModel
 @Composable
 fun NotesScreen(
     rootNavController: NavController, 
-    noteViewModel: NoteViewModel,
-    notificationViewModel: NotificationViewModel,
-    onSignOut: () -> Unit
+    noteViewModel: NoteViewModel
 ) {
     var selectedTab by remember { mutableStateOf("Daily Note") }
-    val unreadCount = notificationViewModel.unreadCount
     
     // Get the cached list of notes from the ViewModel
     val allNotes by noteViewModel.notes

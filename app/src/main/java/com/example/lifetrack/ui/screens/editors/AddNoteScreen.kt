@@ -1,5 +1,6 @@
 package com.example.lifetrack.ui.screens.editors
 
+import DatePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -42,6 +43,7 @@ fun AddNoteScreen(
     noteId: String? = null
 ) {
 
+    // Note fields
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") } // Stores yyyy-MM-dd
@@ -53,7 +55,6 @@ fun AddNoteScreen(
     val context = LocalContext.current
 
     var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
 
     // For Button interaction and changing color
     val interactionSource = remember { MutableInteractionSource() }
@@ -76,26 +77,12 @@ fun AddNoteScreen(
 
     if (showDatePicker) {
         DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    val selectedDate = datePickerState.selectedDateMillis
-                    if (selectedDate != null) {
-                        date = DateTimeUtils.getStorageDate(selectedDate)
-                    }
-                    showDatePicker = false
-                }) {
-                    Text("OK", color = DarkGreen)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel", color = DarkGreen)
-                }
+            onDismiss = { showDatePicker = false },
+            onDateSelected = { selectedDateMillis ->
+                // Convert the long timestamp to your storage string format
+                date = DateTimeUtils.getStorageDate(selectedDateMillis)
             }
-        ) {
-            DatePicker(state = datePickerState)
-        }
+        )
     }
 
     Scaffold(
@@ -160,7 +147,7 @@ fun AddNoteScreen(
             OutlinedTextField(
                 value = if (date.isNotEmpty()) DateTimeUtils.formatForDisplay(date) else "",
                 onValueChange = { },
-                label = { Text("Date") },
+                label = { Text("Select Date") },
                 placeholder = { Text("Select Date") },
                 modifier = Modifier
                     .fillMaxWidth()

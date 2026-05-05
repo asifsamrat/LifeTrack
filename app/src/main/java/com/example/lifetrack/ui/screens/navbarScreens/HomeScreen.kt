@@ -224,9 +224,7 @@ fun HomeScreen(rootNavController: NavController, notificationViewModel: Notifica
             composable(BottomNavItem.Notes.route) {
                 NotesScreen(
                     rootNavController = rootNavController, 
-                    noteViewModel = noteViewModel,
-                    notificationViewModel = notificationViewModel,
-                    onSignOut = onSignOut
+                    noteViewModel = noteViewModel
                 )
             }
             composable(BottomNavItem.Reminder.route) {
